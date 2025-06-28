@@ -13,6 +13,9 @@ import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+
+import me.pedrogandra.bazaarbot.BazaarBot;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -559,6 +562,9 @@ public class Minecraft implements IThreadListener, IPlayerUsage
         this.effectRenderer = new EffectRenderer(this.theWorld, this.renderEngine);
         this.checkGLError("Post startup");
         this.ingameGUI = new GuiIngame(this);
+        
+        //BazaarBot
+        BazaarBot.startClient();
 
         if (this.serverName != null)
         {
@@ -616,7 +622,7 @@ public class Minecraft implements IThreadListener, IPlayerUsage
     private void createDisplay() throws LWJGLException
     {
         Display.setResizable(true);
-        Display.setTitle("Minecraft 1.8.8");
+        Display.setTitle("Loading BazaarBot");
 
         try
         {
@@ -1918,6 +1924,10 @@ public class Minecraft implements IThreadListener, IPlayerUsage
                     }
                     else
                     {
+                    	
+                    	//BazaarBot
+                    	BazaarBot.moduleManager.onKey(k);
+                    	
                         if (k == 1)
                         {
                             this.displayInGameMenu();
