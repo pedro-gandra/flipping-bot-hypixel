@@ -1,0 +1,8 @@
+# Ignora tudo exceto src e seus arquivos de controle
+/*
+!.gitignore
+!README.md
+!LICENSE*
+!src/
+!mcp918.zip
+!optifine.rar
