@@ -5,8 +5,10 @@ import org.lwjgl.opengl.Display;
 import me.pedrogandra.bazaarbot.module.ModuleManager;
 
 public class BazaarBot {
+	
+	public static BazaarBot instance = new BazaarBot();
 
-	public static String name = "BazaarBot", version = "1.8.8b1", creator = "Pedro Gandra"; 
+	public static String name = "BazaarBot", version = "1.0", creator = "Pedro Gandra"; 
 	
 	public static ModuleManager moduleManager;
 	

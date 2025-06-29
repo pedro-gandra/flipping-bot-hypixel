@@ -15,6 +15,7 @@ import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 
 import me.pedrogandra.bazaarbot.BazaarBot;
+import me.pedrogandra.bazaarbot.gui.GuiIngameHook;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -561,7 +562,7 @@ public class Minecraft implements IThreadListener, IPlayerUsage
         GlStateManager.viewport(0, 0, this.displayWidth, this.displayHeight);
         this.effectRenderer = new EffectRenderer(this.theWorld, this.renderEngine);
         this.checkGLError("Post startup");
-        this.ingameGUI = new GuiIngame(this);
+        this.ingameGUI = new GuiIngameHook(this);
         
         //BazaarBot
         BazaarBot.startClient();
