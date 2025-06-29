@@ -1,6 +1,9 @@
 package net.minecraft.client.gui;
 
 import com.google.common.collect.Lists;
+
+import me.pedrogandra.bazaarbot.auth.GuiAuthManager;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -234,7 +237,7 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
     {
         this.buttonList.add(new GuiButton(1, this.width / 2 - 100, p_73969_1_, I18n.format("menu.singleplayer", new Object[0])));
         this.buttonList.add(new GuiButton(2, this.width / 2 - 100, p_73969_1_ + p_73969_2_ * 1, I18n.format("menu.multiplayer", new Object[0])));
-        this.buttonList.add(this.realmsButton = new GuiButton(14, this.width / 2 - 100, p_73969_1_ + p_73969_2_ * 2, I18n.format("menu.online", new Object[0])));
+        this.buttonList.add(this.realmsButton = new GuiButton(500, this.width / 2 - 100, p_73969_1_ + p_73969_2_ * 2, I18n.format("Contas Microsoft", new Object[0])));
     }
 
     /**
@@ -303,6 +306,10 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
                 GuiYesNo guiyesno = GuiSelectWorld.func_152129_a(this, worldinfo.getWorldName(), 12);
                 this.mc.displayGuiScreen(guiyesno);
             }
+        }
+        
+        if (button.id == 500) {
+            this.mc.displayGuiScreen(new GuiAuthManager(this));
         }
     }
 
