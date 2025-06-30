@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -13,24 +14,35 @@ public class HypixelApiClient {
 
     private static final String BASE_URL = "https://api.hypixel.net/v2";
     private static final String USER_AGENT = "Mozilla/5.0";
+    private static final String API_KEY = "6074b4a9-cae5-478a-83e2-ece2e98f9ea2";
 
-    // Método para buscar o JSON do Bazaar
     public JsonObject getBazaarData() throws Exception {
         String endpoint = BASE_URL + "/skyblock/bazaar";
-        URL url = new URL(endpoint);
+        return makeRequest(endpoint, false).getAsJsonObject("products");
+    }
 
+    public JsonArray getItemData() throws Exception {
+        String endpoint = BASE_URL + "/resources/skyblock/items?key=" + API_KEY;
+        return makeRequest(endpoint, true).getAsJsonArray("items");
+    }
+
+    private JsonObject makeRequest(String endpoint, boolean authRequired) throws Exception {
+        URL url = new URL(endpoint);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
         connection.setRequestMethod("GET");
         connection.setRequestProperty("User-Agent", USER_AGENT);
+
+        if (authRequired && API_KEY != null) {
+            connection.setRequestProperty("API-Key", API_KEY);
+        }
 
         int responseCode = connection.getResponseCode();
         if (responseCode != 200) {
             throw new RuntimeException("Erro ao acessar API Hypixel: Código " + responseCode);
         }
 
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(connection.getInputStream())
-        );
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder response = new StringBuilder();
         String inputLine;
 
@@ -40,15 +52,15 @@ public class HypixelApiClient {
 
         in.close();
         connection.disconnect();
-        
+
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(response.toString());
         JsonObject json = element.getAsJsonObject();
 
         if (!json.get("success").getAsBoolean()) {
-            throw new RuntimeException("A requisição foi bem-sucedida mas retornou sucesso = false.");
+            throw new RuntimeException("Requisição retornou sucesso = false.");
         }
 
-        return json.getAsJsonObject("products");
+        return json;
     }
 }

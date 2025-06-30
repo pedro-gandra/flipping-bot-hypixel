@@ -4,11 +4,14 @@ import java.util.List;
 
 public class BazaarItem {
     private String productId;
+    private String displayName;
     private QuickStatus quickStatus;
     private List<OrderSummary> sellSummary;
     private List<OrderSummary> buySummary;
 
-    // Getters e setters
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    
     public String getProductId() { return productId; }
     public void setProductId(String productId) { this.productId = productId; }
 
@@ -20,6 +23,14 @@ public class BazaarItem {
 
     public List<OrderSummary> getBuySummary() { return buySummary; }
     public void setBuySummary(List<OrderSummary> buySummary) { this.buySummary = buySummary; }
+    
+    public double getBestBuy() { return buySummary.get(0).getPricePerUnit(); }
+    public double getBestSell() { return sellSummary.get(0).getPricePerUnit(); }
+    
+    public double getHourlyLiquidity () {
+    	long liquidity = Math.min(quickStatus.getBuyMovingWeek(), quickStatus.getSellMovingWeek());
+		return (liquidity/7/24);
+    }
 
     public static class QuickStatus {
         private String productId;
@@ -32,7 +43,6 @@ public class BazaarItem {
         private long sellMovingWeek;
         private int sellOrders;
 
-        // Getters e setters
         public String getProductId() { return productId; }
         public void setProductId(String productId) { this.productId = productId; }
 
@@ -66,7 +76,6 @@ public class BazaarItem {
         private double pricePerUnit;
         private int orders;
 
-        // Getters e setters
         public int getAmount() { return amount; }
         public void setAmount(int amount) { this.amount = amount; }
 
@@ -75,5 +84,6 @@ public class BazaarItem {
 
         public int getOrders() { return orders; }
         public void setOrders(int orders) { this.orders = orders; }
+        
     }
 }

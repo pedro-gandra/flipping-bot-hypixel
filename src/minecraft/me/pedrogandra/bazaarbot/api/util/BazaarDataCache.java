@@ -11,19 +11,23 @@ import java.util.ArrayList;
 
 public class BazaarDataCache {
 
-	private Map<String, BazaarItem> itemMap = new HashMap<String, BazaarItem>();
+    private ArrayList<BazaarItem> itemList = new ArrayList<BazaarItem>();
+    private Map<String, String> productIdToDisplayName = new HashMap<String, String>();
 
     public void updateFromJson(JsonObject productsJson) {
-        itemMap.clear();
+        itemList.clear();
 
         for (Map.Entry<String, JsonElement> entry : productsJson.entrySet()) {
             String productId = entry.getKey();
             JsonObject product = entry.getValue().getAsJsonObject();
+            
+            String displayName = getDisplayName(productId);
+            if(displayName == null) continue;
 
             BazaarItem item = new BazaarItem();
             item.setProductId(productId);
 
-            // Quick Status
+            
             JsonObject quick = product.getAsJsonObject("quick_status");
             BazaarItem.QuickStatus status = new BazaarItem.QuickStatus();
             status.setProductId(quick.get("productId").getAsString());
@@ -37,7 +41,7 @@ public class BazaarDataCache {
             status.setSellOrders(quick.get("sellOrders").getAsInt());
             item.setQuickStatus(status);
 
-            // Sell Summary
+           
             List<BazaarItem.OrderSummary> sellList = new ArrayList<BazaarItem.OrderSummary>();
             JsonArray sellArray = product.getAsJsonArray("sell_summary");
             for (JsonElement e : sellArray) {
@@ -50,7 +54,7 @@ public class BazaarDataCache {
             }
             item.setSellSummary(sellList);
 
-            // Buy Summary
+            
             List<BazaarItem.OrderSummary> buyList = new ArrayList<BazaarItem.OrderSummary>();
             JsonArray buyArray = product.getAsJsonArray("buy_summary");
             for (JsonElement e : buyArray) {
@@ -62,16 +66,51 @@ public class BazaarDataCache {
                 buyList.add(order);
             }
             item.setBuySummary(buyList);
-
-            itemMap.put(productId, item);
+            
+            item.setDisplayName(getDisplayName(productId));
+            
+            itemList.add(item);
         }
     }
 
-    public BazaarItem getItem(String productId) {
-        return itemMap.get(productId);
+    public void loadDisplayNamesFromJson(JsonArray itemsArray) {
+        productIdToDisplayName.clear();
+
+        for (JsonElement element : itemsArray) {
+            JsonObject obj = element.getAsJsonObject();
+            String id = obj.get("id").getAsString();
+            String name = obj.get("name").getAsString();
+
+            productIdToDisplayName.put(id, name);
+        }
     }
 
-    public Map<String, BazaarItem> getAllItems() {
-        return itemMap;
+    public String getDisplayName(String productId) {
+    	String display = productIdToDisplayName.get(productId);
+    	StringBuilder str = new StringBuilder();
+    	if(display != null)
+    		return display;
+    	if (productId.startsWith("SHARD_")) {
+            display = productId.substring(6);
+            String[] parts = display.split("_");
+            for (int i = 0; i < parts.length; i++) {
+                if (parts[i].isEmpty()) continue;
+                str.append(capitalize(parts[i].toLowerCase()));
+                if (i < parts.length - 1) {
+                    str.append(" ");
+                }
+            }
+            return str.toString();
+        }
+    	return null;
+    }
+
+    public ArrayList<BazaarItem> getAllItems() {
+        return itemList;
+    }
+    
+    private static String capitalize(String word) {
+        if (word.length() == 0) return word;
+        return word.substring(0, 1).toUpperCase() + word.substring(1);
     }
 }

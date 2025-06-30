@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import me.pedrogandra.bazaarbot.BazaarBot;
@@ -29,48 +30,25 @@ public class AutoBazaar extends Module {
 	}
 	
 	public void onEnable() {
-		refreshReady = true;
+		currentItems = new ArrayList<BazaarItem>();
+		new Thread(new Runnable() {
+	        @Override
+	        public void run() {
+	            try {
+	            	JsonArray itemJson = api.getItemData();
+	        		bazaarData.loadDisplayNamesFromJson(itemJson);
+	        		refreshReady = true;
+	            } catch (Exception e) {
+	                e.printStackTrace();
+	            }
+	        }
+	    }).start();
 	}
 	
 	public void onDisable() {
 		refreshReady = false;
 		currentIndex = 0;
-		currentItems = null;
-	}
-	
-	public void onUpdate() {
-		
-		KeyboardManager.update();
-		
-		if (refreshReady) {
-		    refreshReady = false;
-
-		    new Thread(new Runnable() {
-		        @Override
-		        public void run() {
-		            try {
-		                JsonObject json = api.getBazaarData();
-		                bazaarData.updateFromJson(json);
-		                currentItems = new ArrayList<BazaarItem>(bazaarData.getAllItems().values());
-		            } catch (Exception e) {
-		                e.printStackTrace();
-		            }
-		        }
-		    }).start();
-		}
-		
-		if(currentItems != null && !currentItems.isEmpty()) {
-			if (KeyboardManager.isKeyJustPressed(Keyboard.KEY_RIGHT)) {
-				 currentIndex = (currentIndex + 1) % currentItems.size();
-			} else if(KeyboardManager.isKeyJustPressed(Keyboard.KEY_LEFT)) {
-				if(currentIndex == 0)
-					currentIndex = currentItems.size()-1;
-				else
-					currentIndex -= 1;
-			}
-		}
-		
-		
+		currentItems.clear();
 	}
 
 	public ArrayList<BazaarItem> getCurrentItems() {
@@ -92,6 +70,60 @@ public class AutoBazaar extends Module {
 	public BazaarItem getSpecificItem(int i) {
 		if (currentItems == null || currentItems.isEmpty()) return null;
 		return currentItems.get(i);
+	}
+	
+	public void onUpdate() {
+		
+		KeyboardManager.update();
+		
+		if (refreshReady) {
+		    refreshReady = false;
+
+		    new Thread(new Runnable() {
+		        @Override
+		        public void run() {
+		            try {
+		                JsonObject json = api.getBazaarData();
+		                bazaarData.updateFromJson(json);
+		                filterItems();
+		            } catch (Exception e) {
+		                e.printStackTrace();
+		            }
+		        }
+		    }).start();
+		}
+		
+		if(currentItems != null && !currentItems.isEmpty()) {
+			if (KeyboardManager.isKeyJustPressed(Keyboard.KEY_RIGHT)) {
+				 currentIndex = (currentIndex + 1) % currentItems.size();
+			} else if(KeyboardManager.isKeyJustPressed(Keyboard.KEY_LEFT)) {
+				if(currentIndex == 0)
+					currentIndex = currentItems.size()-1;
+				else
+					currentIndex -= 1;
+			}
+		}
+		
+		
+	}
+	
+	private void filterItems() {
+		ArrayList<BazaarItem> list = bazaarData.getAllItems();
+		currentItems.clear();
+		for(BazaarItem item : list) {
+			BazaarItem.QuickStatus q = item.getQuickStatus();
+			List<BazaarItem.OrderSummary> b = item.getBuySummary();
+			List<BazaarItem.OrderSummary> s = item.getSellSummary();		
+			if(b != null && !b.isEmpty() && s != null && !s.isEmpty()) {
+				long liquidity = Math.min(q.getBuyMovingWeek(), q.getSellMovingWeek());
+				double hourlyLiquidity = item.getHourlyLiquidity();
+				double spread = item.getBestBuy() - item.getBestSell();
+				double margin = item.getBestBuy()/item.getBestSell();
+				if(hourlyLiquidity*spread > 10000000 && margin > 1.04) {
+					currentItems.add(item);
+				}
+			}
+		}
 	}
 	
 

@@ -68,17 +68,27 @@ public class GuiIngameHook extends GuiIngame {
 		BazaarItem item = bz.getSpecificItem(index);
 	    if (item == null) return;
 	    BazaarItem.QuickStatus q = item.getQuickStatus();
+	    double bestBuy = item.getBestBuy();
+	    double bestSell = item.getBestSell();
+	    double spread = bestBuy - bestSell;
+	    double hourlyLiquidity = item.getHourlyLiquidity();
 
-	    int x = 10;
-	    int y = 120;
+	    int x = 500;
+	    int y = 10;
 	    int width = 180;
-	    int height = 90;
-	    drawRect(x, y, x + width, y + height, 0x80000000);
-	    
-	    drawCenterTextRect("Item: " + item.getProductId(), x, y + 10, width, 15, 0x90000000, 0xFFFFFF);
-	    drawCenterTextRect("Buy: " + q.getBuyPrice(), x, y + 30, width, 15, 0x90000000, 0x00FF00);
-	    drawCenterTextRect("Sell: " + q.getSellPrice(), x, y + 50, width, 15, 0x90000000, 0xFF5555);
-	    drawCenterTextRect("Spread: " + (q.getSellPrice() - q.getBuyPrice()), x, y + 70, width, 15, 0x90000000, 0xFFFF00);
+	    drawCenterTextRect("Total de items: " + bz.getCurrentItems().size(), x, y, width, 15, 0x90000000, 0xFFFFFF);
+	    y+=15;
+	    drawCenterTextRect("Item: " + item.getDisplayName(), x, y, width, 15, 0x90000000, 0xFFFFFF);
+	    y+=15;
+	    drawCenterTextRect("Price: " + bestSell, x, y, width, 15, 0x90000000, 0xFFFFFF);
+	    y+=15;
+	    drawCenterTextRect("Spread: " + spread, x, y, width, 15, 0x90000000, 0x00FF00);
+	    y+=15;
+	    drawCenterTextRect("Margin: " + (bestBuy/bestSell), x, y, width, 15, 0x90000000, 0xFF5555);
+	    y+=15;
+	    drawCenterTextRect("items per hour: " + hourlyLiquidity, x, y, width, 15, 0x90000000, 0xFF5555);
+	    y+=15;
+	    drawCenterTextRect("Perfect profit: " + hourlyLiquidity*spread, x, y, width, 15, 0x90000000, 0xFF5555);
 	}
 
 }
