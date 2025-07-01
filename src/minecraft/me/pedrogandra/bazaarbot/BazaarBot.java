@@ -5,6 +5,7 @@ import java.util.List;
 import org.lwjgl.opengl.Display;
 
 import me.pedrogandra.bazaarbot.auth.*;
+import me.pedrogandra.bazaarbot.commands.CommandManager;
 import me.pedrogandra.bazaarbot.module.ModuleManager;
 
 public class BazaarBot {
@@ -12,9 +13,11 @@ public class BazaarBot {
 	public static BazaarBot instance = new BazaarBot();
 	public static String name = "BazaarBot", version = "1.0", creator = "Pedro Gandra"; 
 	public static ModuleManager moduleManager;
+	public static CommandManager commandManager;
 	
 	public static void startClient() {
 		moduleManager = new ModuleManager();
+		commandManager = new CommandManager();
 		Display.setTitle(name + " v" + version + " by " + creator);
 		List<AuthAccount> loaded = AuthStorage.loadAccounts();
 		for (AuthAccount acc : loaded) {
