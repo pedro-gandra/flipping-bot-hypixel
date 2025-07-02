@@ -11,9 +11,11 @@ import com.google.gson.JsonObject;
 import me.pedrogandra.bazaarbot.BazaarBot;
 import me.pedrogandra.bazaarbot.api.HypixelApiClient;
 import me.pedrogandra.bazaarbot.api.util.*;
+import me.pedrogandra.bazaarbot.commands.tests.TestString;
 import me.pedrogandra.bazaarbot.gui.GuiIngameHook;
-import me.pedrogandra.bazaarbot.utils.KeyboardManager;
+import me.pedrogandra.bazaarbot.utils.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiChat;
 
 public class AutoBazaar extends Module {
 	
@@ -23,10 +25,20 @@ public class AutoBazaar extends Module {
 	private HypixelApiClient api = new HypixelApiClient();
 	private ArrayList<BazaarItem> currentItems;
 	private int currentIndex = 0;
+	private ChestManager cm = new ChestManager();
+	private IOManager io = new IOManager();
+	private TestString ts = TestString.instance;
+	private DelayManager dm = DelayManager.instance;
+	private MCUtils mcu = new MCUtils();
+	
 	
 	public AutoBazaar() {
 		super("AutoBazaar", Keyboard.KEY_F);
 		instance = this;
+	}
+	
+	public ArrayList<BazaarItem> getCurrentItems() {
+		return currentItems;
 	}
 	
 	public void onEnable() {
@@ -51,22 +63,6 @@ public class AutoBazaar extends Module {
 		currentItems.clear();
 	}
 
-	public ArrayList<BazaarItem> getCurrentItems() {
-		return currentItems;
-	}
-
-	public void setCurrentItems(ArrayList<BazaarItem> currentItems) {
-		this.currentItems = currentItems;
-	}
-
-	public int getCurrentIndex() {
-		return currentIndex;
-	}
-
-	public void setCurrentIndex(int currentIndex) {
-		this.currentIndex = currentIndex;
-	}
-	
 	public BazaarItem getSpecificItem(int i) {
 		if (currentItems == null || currentItems.isEmpty()) return null;
 		return currentItems.get(i);
@@ -74,29 +70,19 @@ public class AutoBazaar extends Module {
 	
 	public void onUpdate() {
 		
-		KeyboardManager.update();
-		
+		//main logic
 		if (refreshReady) {
 		    refreshReady = false;
-
-		    new Thread(new Runnable() {
-		        @Override
-		        public void run() {
-		            try {
-		                JsonObject json = api.getBazaarData();
-		                bazaarData.updateFromJson(json);
-		                filterItems();
-		            } catch (Exception e) {
-		                e.printStackTrace();
-		            }
-		        }
-		    }).start();
+		    callApiBazaar();
+		} else {
+			
 		}
 		
+		//navigate cards
 		if(currentItems != null && !currentItems.isEmpty()) {
-			if (KeyboardManager.isKeyJustPressed(Keyboard.KEY_RIGHT)) {
-				 currentIndex = (currentIndex + 1) % currentItems.size();
-			} else if(KeyboardManager.isKeyJustPressed(Keyboard.KEY_LEFT)) {
+			if (KeyboardManager.isKeyJustPressed(Keyboard.KEY_RIGHT))
+				 currentIndex = (currentIndex + 1) % currentItems.size();		 
+			else if(KeyboardManager.isKeyJustPressed(Keyboard.KEY_LEFT)) {
 				if(currentIndex == 0)
 					currentIndex = currentItems.size()-1;
 				else
@@ -104,7 +90,21 @@ public class AutoBazaar extends Module {
 			}
 		}
 		
-		
+	}
+	
+	private void callApiBazaar() {
+		new Thread(new Runnable() {
+	        @Override
+	        public void run() {
+	            try {
+	                JsonObject json = api.getBazaarData();
+	                bazaarData.updateFromJson(json);
+	                filterItems();
+	            } catch (Exception e) {
+	                e.printStackTrace();
+	            }
+	        }
+	    }).start();
 	}
 	
 	private void filterItems() {
