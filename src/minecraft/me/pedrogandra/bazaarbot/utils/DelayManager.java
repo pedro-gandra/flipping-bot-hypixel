@@ -6,7 +6,7 @@ import java.util.Queue;
 public class DelayManager {
 
 	public static DelayManager instance = new DelayManager();
-	private final Queue<Task> tasks = new LinkedList<Task>();
+	private final Queue<Task> tasks = new LinkedList<>();
 	
 	private static class Task {
         Runnable action;

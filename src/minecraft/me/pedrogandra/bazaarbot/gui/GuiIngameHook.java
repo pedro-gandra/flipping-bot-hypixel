@@ -6,9 +6,10 @@ import java.util.List;
 import org.lwjgl.input.Keyboard;
 
 import me.pedrogandra.bazaarbot.BazaarBot;
-import me.pedrogandra.bazaarbot.api.util.BazaarItem;
+import me.pedrogandra.bazaarbot.bazaar.BazaarItem;
 import me.pedrogandra.bazaarbot.module.AutoBazaar;
 import me.pedrogandra.bazaarbot.module.Module;
+import me.pedrogandra.bazaarbot.utils.IOManager;
 import me.pedrogandra.bazaarbot.utils.Wrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
@@ -19,6 +20,7 @@ public class GuiIngameHook extends GuiIngame {
 	private Minecraft mc = Minecraft.getMinecraft();
 	private BazaarBot bb = BazaarBot.instance;
 	private AutoBazaar bz = AutoBazaar.instance;
+	private IOManager io = new IOManager();
 	public static BazaarItem item;
 	private static int currentItemIndex = 0;
 	
@@ -65,7 +67,7 @@ public class GuiIngameHook extends GuiIngame {
 	
 	private void renderItemCards() {
 		int index = bz.getCurrentIndex();
-		BazaarItem item = bz.getSpecificItem(index);
+		BazaarItem item = bz.getItemAt(index);
 	    if (item == null) return;
 	    BazaarItem.QuickStatus q = item.getQuickStatus();
 	    double bestBuy = item.getBestBuy();
@@ -80,15 +82,15 @@ public class GuiIngameHook extends GuiIngame {
 	    y+=15;
 	    drawCenterTextRect("Item: " + item.getDisplayName(), x, y, width, 15, 0x90000000, 0xFFFFFF);
 	    y+=15;
-	    drawCenterTextRect("Price: " + bestSell, x, y, width, 15, 0x90000000, 0xFFFFFF);
+	    drawCenterTextRect("Price: " + io.formatDouble(bestSell), x, y, width, 15, 0x90000000, 0xFFFFFF);
 	    y+=15;
-	    drawCenterTextRect("Spread: " + spread, x, y, width, 15, 0x90000000, 0x00FF00);
+	    drawCenterTextRect("Spread: " + io.formatDouble(spread), x, y, width, 15, 0x90000000, 0x00FF00);
 	    y+=15;
-	    drawCenterTextRect("Margin: " + (bestBuy/bestSell), x, y, width, 15, 0x90000000, 0xFF5555);
+	    drawCenterTextRect("Margin: " + io.formatDouble(bestBuy/bestSell), x, y, width, 15, 0x90000000, 0xFF5555);
 	    y+=15;
-	    drawCenterTextRect("items per hour: " + hourlyLiquidity, x, y, width, 15, 0x90000000, 0xFF5555);
+	    drawCenterTextRect("items per hour: " + io.formatDouble(hourlyLiquidity), x, y, width, 15, 0x90000000, 0xFF5555);
 	    y+=15;
-	    drawCenterTextRect("Perfect profit: " + hourlyLiquidity*spread, x, y, width, 15, 0x90000000, 0xFF5555);
+	    drawCenterTextRect("Perfect profit: " + io.formatDouble(hourlyLiquidity*spread), x, y, width, 15, 0x90000000, 0xFF5555);
 	}
 
 }

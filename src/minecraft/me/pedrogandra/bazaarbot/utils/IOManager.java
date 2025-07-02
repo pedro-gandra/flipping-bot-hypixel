@@ -1,5 +1,7 @@
 package me.pedrogandra.bazaarbot.utils;
 
+import java.text.DecimalFormat;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
@@ -31,4 +33,9 @@ public class IOManager {
             sendChat("Nenhuma tela aberta.");
         }
     }
+    
+    public static String formatDouble(double n) {
+    	DecimalFormat df = new DecimalFormat("#,###.##");
+		return df.format(n);
+	}
 }

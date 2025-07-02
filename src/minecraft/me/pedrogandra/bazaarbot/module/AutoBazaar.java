@@ -1,7 +1,9 @@
 package me.pedrogandra.bazaarbot.module;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.lwjgl.input.Keyboard;
 
@@ -11,6 +13,7 @@ import com.google.gson.JsonObject;
 import me.pedrogandra.bazaarbot.BazaarBot;
 import me.pedrogandra.bazaarbot.api.HypixelApiClient;
 import me.pedrogandra.bazaarbot.api.util.*;
+import me.pedrogandra.bazaarbot.bazaar.BazaarItem;
 import me.pedrogandra.bazaarbot.commands.tests.TestString;
 import me.pedrogandra.bazaarbot.gui.GuiIngameHook;
 import me.pedrogandra.bazaarbot.utils.*;
@@ -23,7 +26,7 @@ public class AutoBazaar extends Module {
 	private boolean refreshReady = false;
 	private BazaarDataCache bazaarData = new BazaarDataCache();
 	private HypixelApiClient api = new HypixelApiClient();
-	private ArrayList<BazaarItem> currentItems;
+	private IndexedMap<String, BazaarItem> currentItems;
 	private int currentIndex = 0;
 	private ChestManager cm = new ChestManager();
 	private IOManager io = new IOManager();
@@ -37,12 +40,26 @@ public class AutoBazaar extends Module {
 		instance = this;
 	}
 	
-	public ArrayList<BazaarItem> getCurrentItems() {
+	public IndexedMap<String, BazaarItem> getCurrentItems() {
 		return currentItems;
+	}
+
+	public int getCurrentIndex() {
+		return currentIndex;
+	}
+	
+	public BazaarItem getItemAt(int i) {
+		if (currentItems == null || currentItems.isEmpty()) return null;
+		return currentItems.getByIndex(i);
+	}
+	
+	public BazaarItem getItemNamed(String name) {
+		if (currentItems == null || currentItems.isEmpty()) return null;
+		return currentItems.getByKey(name);
 	}
 	
 	public void onEnable() {
-		currentItems = new ArrayList<BazaarItem>();
+		currentItems = new IndexedMap<>();
 		new Thread(new Runnable() {
 	        @Override
 	        public void run() {
@@ -60,12 +77,7 @@ public class AutoBazaar extends Module {
 	public void onDisable() {
 		refreshReady = false;
 		currentIndex = 0;
-		currentItems.clear();
-	}
-
-	public BazaarItem getSpecificItem(int i) {
-		if (currentItems == null || currentItems.isEmpty()) return null;
-		return currentItems.get(i);
+		currentItems.clear();;
 	}
 	
 	public void onUpdate() {
@@ -93,18 +105,15 @@ public class AutoBazaar extends Module {
 	}
 	
 	private void callApiBazaar() {
-		new Thread(new Runnable() {
-	        @Override
-	        public void run() {
-	            try {
-	                JsonObject json = api.getBazaarData();
-	                bazaarData.updateFromJson(json);
-	                filterItems();
-	            } catch (Exception e) {
-	                e.printStackTrace();
-	            }
-	        }
-	    }).start();
+		new Thread(() -> {
+		    try {
+		        JsonObject json = api.getBazaarData();
+		        bazaarData.updateFromJson(json);
+		        filterItems();
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		    }
+		}).start();
 	}
 	
 	private void filterItems() {
@@ -119,11 +128,20 @@ public class AutoBazaar extends Module {
 				double hourlyLiquidity = item.getHourlyLiquidity();
 				double spread = item.getBestBuy() - item.getBestSell();
 				double margin = item.getBestBuy()/item.getBestSell();
-				if(hourlyLiquidity*spread > 10000000 && margin > 1.04) {
-					currentItems.add(item);
+				if(hourlyLiquidity*spread > 10000000 && margin > 1.3 && margin < 1.9 && hourlyLiquidity > 80 && hourlyLiquidity < 10000) {
+					currentItems.put(item.getDisplayName(), item);
 				}
 			}
 		}
+		sortItems();
+	}
+	
+	private void sortItems() {
+	    currentItems.sort((a, b) -> {
+	        double profitA = a.getHourlyLiquidity() * (a.getBestBuy() - a.getBestSell());
+	        double profitB = b.getHourlyLiquidity() * (b.getBestBuy() - b.getBestSell());
+	        return Double.compare(profitB, profitA);
+	    });
 	}
 	
 

@@ -102,15 +102,13 @@ public class ChestManager {
             final char c = s.charAt(i);
             final int keyCode = getKeyCodeForChar(c);
 
-            dm.schedule(new Runnable() {
-                public void run() {
-                    try {
-                        gui.keyTyped(c, keyCode);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            dm.schedule(() -> {
+                try {
+                    gui.keyTyped(c, keyCode);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            }, 50*i);
+            }, 50 * i);
         }
     }
     

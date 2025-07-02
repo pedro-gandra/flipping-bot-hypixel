@@ -1,6 +1,9 @@
 package me.pedrogandra.bazaarbot.api.util;
 
 import com.google.gson.JsonObject;
+
+import me.pedrogandra.bazaarbot.bazaar.BazaarItem;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonArray;
 
@@ -11,8 +14,8 @@ import java.util.ArrayList;
 
 public class BazaarDataCache {
 
-    private ArrayList<BazaarItem> itemList = new ArrayList<BazaarItem>();
-    private Map<String, String> productIdToDisplayName = new HashMap<String, String>();
+    private ArrayList<BazaarItem> itemList = new ArrayList<>();
+    private Map<String, String> productIdToDisplayName = new HashMap<>();
 
     public void updateFromJson(JsonObject productsJson) {
         itemList.clear();

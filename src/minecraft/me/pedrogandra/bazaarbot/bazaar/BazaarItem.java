@@ -1,4 +1,4 @@
-package me.pedrogandra.bazaarbot.api.util;
+package me.pedrogandra.bazaarbot.bazaar;
 
 import java.util.List;
 
