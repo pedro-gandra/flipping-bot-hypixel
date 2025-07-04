@@ -14,6 +14,10 @@ public class MCUtils {
 	    return text.replaceAll("§[0-9a-fk-or]", "");
 	}
 	
+	public static String getNumber(String text) {
+		return text.replaceAll("[^\\d.]", "");
+	}
+	
 	public static void clickButton(String label) {
 		
         GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;

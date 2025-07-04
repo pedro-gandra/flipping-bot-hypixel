@@ -21,6 +21,9 @@ import net.minecraft.util.IChatComponent;
 
 public class ChestManager {
 	
+	public final int slotCancelBuy = 11;
+	public final int slotCancelSell = 13;
+	
 	public final int slotSubmit = 13;
 	public final int slotPrice = 12;
 	public final int slotAmount = 16;
@@ -46,10 +49,13 @@ public class ChestManager {
         }
         return null;
     }
-
-    public String getSlotName(int slot) {
-        ItemStack item = getItemInSlot(slot);
-        return item != null && item.hasDisplayName() ? item.getDisplayName() : null;
+    
+    public IInventory getPlayerInventory() {
+        GuiChest chest = getOpenChest();
+        if (chest != null) {
+            return chest.upperChestInventory;
+        }
+        return null;
     }
 
     public ItemStack getItemInSlot(int slot) {
@@ -57,58 +63,46 @@ public class ChestManager {
         return inv != null ? inv.getStackInSlot(slot) : null;
     }
     
-    public int getSlotByItemName(String name) {
-        IInventory inv = getChestInventory();
+    public int getSlot(String name, String type, boolean chest) {
+    	IInventory inv;
+    	if(chest)
+    		inv = getChestInventory();
+    	else
+    		inv = getPlayerInventory();
         if (inv == null) return -1;
         for (int i = 0; i < inv.getSizeInventory(); i++) {
             ItemStack item = inv.getStackInSlot(i);
             if (item != null) {
             	String itemName = MCUtils.cleanText(item.getDisplayName());
-                if (itemName.equalsIgnoreCase(name)) {
-                    return i;
-                }
+            	if(type.equals("")) {
+	                if(itemName.equalsIgnoreCase(name))
+	                    return i;
+            	} else {
+            		if(itemName.contains(itemName) && itemName.contains(type))
+            			return i;
+            	}
             }
         }
-
         return -1;
     }
-    
-    public void printItemInfo() {
-    	IInventory inv = getChestInventory();
-        if (inv == null) return;
 
-        for (int i = 0; i < inv.getSizeInventory(); i++) {
-            ItemStack item = inv.getStackInSlot(i);
-            int cont = 0;
-            if (item != null) {
-	            String name = item.getDisplayName();
-	            IOManager.sendChat("Nome: " + name);
-	            name = MCUtils.cleanText(name);
-	            IOManager.sendChat("Nome: " + name);
-            }
-        }
-    }
-
-    public void clickSlot(int slotId, int mouseButton, int mode) {
-        mc.playerController.windowClick(mc.thePlayer.openContainer.windowId, slotId, mouseButton, mode, mc.thePlayer);
+    public void clickSlot(int slotId, int mouseButton, int mode, boolean chest) {
+    	int trueSlot = slotId;
+    	if(!chest) {
+    		if(trueSlot <= 8) trueSlot+=36;
+    		trueSlot += getChestInventory().getSizeInventory()-9;
+    	}
+        mc.playerController.windowClick(mc.thePlayer.openContainer.windowId, trueSlot, mouseButton, mode, mc.thePlayer);
     }
     
-    public void writeSign(final String s) {
+    public void writeSign(final String s) throws Exception {
     	if(!(mc.currentScreen instanceof GuiEditSign)) return;
-    	
         final GuiEditSign gui = (GuiEditSign) mc.currentScreen;
-
         for (int i = 0; i < s.length(); i++) {
             final char c = s.charAt(i);
             final int keyCode = getKeyCodeForChar(c);
-
-            dm.schedule(() -> {
-                try {
-                    gui.keyTyped(c, keyCode);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }, 50 * i);
+            gui.keyTyped(c, keyCode);
+            Thread.sleep(50);
         }
     }
     
