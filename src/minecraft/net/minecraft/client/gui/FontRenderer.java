@@ -3,6 +3,12 @@ package net.minecraft.client.gui;
 import com.ibm.icu.text.ArabicShaping;
 import com.ibm.icu.text.ArabicShapingException;
 import com.ibm.icu.text.Bidi;
+
+import me.pedrogandra.bazaarbot.bazaar.OrderManager;
+import me.pedrogandra.bazaarbot.module.AutoBazaar;
+import me.pedrogandra.bazaarbot.utils.IOManager;
+import me.pedrogandra.bazaarbot.utils.MCUtils;
+
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -370,10 +376,28 @@ public class FontRenderer implements IResourceManagerReloadListener
      */
     public int drawString(String text, float x, float y, int color, boolean dropShadow)
     {
+    	
+    	//BazaarBot
+    	if(text.contains("Purse:")) {
+    		try {
+	    		double purse;
+	    		purse = Double.parseDouble(MCUtils.getNumber(MCUtils.cleanText(text)));
+	    		if(AutoBazaar.readPurseNow) {
+		    		AutoBazaar.readPurseNow = false;
+		    		OrderManager.initialPurse = purse;
+		    		IOManager.sendChat(purse+"");
+	    		} else {
+	    			OrderManager.currentPurse = purse;
+	    		}
+    		} catch(Exception e) {
+    			IOManager.sendError("Falha ao processar purse: " + e.toString() + " - " + e.getMessage());
+    		}
+    	}
+    	
         GlStateManager.enableAlpha();
         this.resetStyles();
         int i;
-
+        
         if (dropShadow)
         {
             i = this.renderString(text, x + 1.0F, y + 1.0F, color, true);

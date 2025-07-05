@@ -8,8 +8,6 @@ import net.minecraft.client.gui.GuiScreen;
 
 public class MCUtils {
 	
-	private final Minecraft mc = Minecraft.getMinecraft();
-	
 	public static String cleanText(String text) {
 	    return text.replaceAll("§[0-9a-fk-or]", "");
 	}

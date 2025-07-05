@@ -28,6 +28,14 @@ public class IndexedMap<K, V> {
         K key = indexList.get(index);
         return map.get(key);
     }
+    
+    public int getIndexOf(K key) {
+        return indexList.indexOf(key);
+    }
+    
+    public K getKeyByIndex(int index) {
+        return indexList.get(index);
+    }
 
     public void remove(K key) {
         if (map.containsKey(key)) {

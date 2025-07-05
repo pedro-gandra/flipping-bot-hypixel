@@ -9,7 +9,7 @@ public class ModuleManager {
 	public ModuleManager() {
 		mods = new ArrayList<Module>();
 		
-		newMod(AutoBazaar.instance);
+		newMod(new AutoBazaar());
 	}
 	
 	public static void newMod(Module m) {

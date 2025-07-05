@@ -19,7 +19,7 @@ public class GuiIngameHook extends GuiIngame {
 	
 	private Minecraft mc = Minecraft.getMinecraft();
 	private BazaarBot bb = BazaarBot.instance;
-	private AutoBazaar bz = AutoBazaar.instance;
+	public static AutoBazaar bz;
 	private IOManager io = new IOManager();
 	public static BazaarItem item;
 	private static int currentItemIndex = 0;

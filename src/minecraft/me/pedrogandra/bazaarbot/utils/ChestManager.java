@@ -31,6 +31,7 @@ public class ChestManager {
 	public final int slotSell = 16;
 	public final int slotSearch = 45;
 	public final int slotManage = 50;
+	public final int slotManageBack = 31;
 	
     private final Minecraft mc = Minecraft.getMinecraft();
     private DelayManager dm = DelayManager.instance;
@@ -87,6 +88,8 @@ public class ChestManager {
     }
 
     public void clickSlot(int slotId, int mouseButton, int mode, boolean chest) {
+    	if (!(mc.currentScreen instanceof GuiChest))
+    		return;
     	int trueSlot = slotId;
     	if(!chest) {
     		if(trueSlot <= 8) trueSlot+=36;
@@ -104,6 +107,8 @@ public class ChestManager {
             gui.keyTyped(c, keyCode);
             Thread.sleep(50);
         }
+        Thread.sleep(300);
+        MCUtils.clickButton("done");
     }
     
     private int getKeyCodeForChar(char c) {
