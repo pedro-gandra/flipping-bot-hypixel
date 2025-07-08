@@ -20,6 +20,8 @@ import me.pedrogandra.bazaarbot.gui.GuiIngameHook;
 import me.pedrogandra.bazaarbot.utils.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemStack;
 
 public class AutoBazaar extends Module {
 	
@@ -36,6 +38,7 @@ public class AutoBazaar extends Module {
 	private DelayManager dm = DelayManager.instance;
 	private OrderManager om = OrderManager.instance;
 	private MCUtils mcu = new MCUtils();
+	private long inicio = 0, fim;
 	
 	public static boolean readPurseNow = false;
 	
@@ -70,8 +73,6 @@ public class AutoBazaar extends Module {
 		currentItems = new IndexedMap<>();
 		new Thread(() -> {
             try {
-            	om.initialPurse = 26000000;
-            	readPurseNow = true;
             	JsonArray itemJson = api.getItemData();
         		bazaarData.loadDisplayNamesFromJson(itemJson);
         		refreshReady = true;
@@ -99,6 +100,7 @@ public class AutoBazaar extends Module {
 				isExecuting = true;
 				if (refreshReady) {
 				    refreshReady = false;
+				    readPurseNow = true;
 				    callApiBazaar();
 				} else {
 					manageOrders();
@@ -119,10 +121,6 @@ public class AutoBazaar extends Module {
 			
 		}
 		
-		if (KeyboardManager.isKeyJustPressed(Keyboard.KEY_G)) {
-
-		}
-		
 	}
 	
 	private void callApiBazaar() {
@@ -131,6 +129,7 @@ public class AutoBazaar extends Module {
 		        JsonObject json = api.getBazaarData();
 		        bazaarData.updateFromJson(json);
 		        filterItems();
+		        io.sendChat("Dados da API atualizados");
 		        isExecuting = false;
 		    } catch (Exception e) {
 		    	io.sendError("Falha ao coletar dados da API: " + e.toString() + " - " + e.getMessage());
@@ -143,11 +142,24 @@ public class AutoBazaar extends Module {
 		
 		new Thread(() -> {
 			try {
+				int ciclos = 0;
+				boolean buy = true;
 				mc.thePlayer.sendChatMessage("/bz");
 				Thread.sleep(500);
-				om.checkOrders();
-				Thread.sleep(500);
-				om.createOrders();
+				while(ciclos < 100) {
+					if(ciclos==60) {
+						logTime("Operated with purchases for: ");
+						buy = false;
+						om.processOrders(buy, true, false);
+					} else {
+						om.processOrders(buy, false, false);
+					}
+					Thread.sleep(500);
+					ciclos++;
+				}
+				logTime("Operated with only sells for: ");
+				om.processOrders(false, false, true);
+				om.currentOrders.clear();
 				refreshReady = true;
 				isExecuting = false;
 			} catch (Exception e) {
@@ -157,6 +169,17 @@ public class AutoBazaar extends Module {
 			
 		}).start();
 		
+	}
+	
+	private void logTime(String mensagem) {
+		if(inicio == 0)
+			inicio = System.nanoTime();
+		else {
+			fim = System.nanoTime();
+			double segundos = (fim-inicio)/1_000_000_000;
+			io.sendChat(mensagem + segundos + " seconds");
+			inicio = System.nanoTime();
+		}
 	}
 	
 	private void filterItems() {
@@ -173,7 +196,7 @@ public class AutoBazaar extends Module {
 				double bestSell = item.getBestSell();
 				double spread = bestBuy - bestSell;
 				double margin = bestBuy/bestSell;
-				if(hourlyLiquidity*spread > 10000000 && margin > 1.3 && margin < 3 && hourlyLiquidity > 80 && hourlyLiquidity < 10000 && bestSell > 100000) {
+				if(hourlyLiquidity*spread > 10000000 && margin > 1.3 && margin < 3 && hourlyLiquidity > 60 && hourlyLiquidity < 10000 && bestSell > 100000) {
 					currentItems.put(item.getDisplayName(), item);
 				}
 			}
@@ -184,6 +207,10 @@ public class AutoBazaar extends Module {
 		for (int i = 0; i < limit; i++) {
 		    String key = currentItems.getKeyByIndex(i);
 		    BazaarItem value = currentItems.getByIndex(i);
+		    if(key.contains("cinder")) {
+		    	key = "Cinderbat";
+		    	value.setDisplayName(key);
+		    }
 		    top7.put(key, value);
 		}
 		currentItems = top7;
@@ -195,6 +222,13 @@ public class AutoBazaar extends Module {
 	        double profitB = b.getHourlyLiquidity() * (b.getBestBuy() - b.getBestSell());
 	        return Double.compare(profitB, profitA);
 	    });
+	}
+	
+	private void printItems() {
+		for(int i = 0; i < currentItems.size(); i++) {
+			BazaarItem item = currentItems.getByIndex(i);
+			io.sendChat(item.getDisplayName() + ": " + item.getBestSell() + " - " + item.getBestBuy());
+		}
 	}
 	
 

@@ -31,6 +31,7 @@ public class ChestManager {
 	public final int slotSell = 16;
 	public final int slotSearch = 45;
 	public final int slotManage = 50;
+	public final int slotManageShort = 32;
 	public final int slotManageBack = 31;
 	
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -79,7 +80,7 @@ public class ChestManager {
 	                if(itemName.equalsIgnoreCase(name))
 	                    return i;
             	} else {
-            		if(itemName.contains(itemName) && itemName.contains(type))
+            		if(itemName.contains(name) && itemName.contains(type))
             			return i;
             	}
             }
@@ -87,15 +88,25 @@ public class ChestManager {
         return -1;
     }
 
-    public void clickSlot(int slotId, int mouseButton, int mode, boolean chest) {
+    public boolean clickSlot(int slotId, int mouseButton, int mode, boolean chest) throws Exception {
     	if (!(mc.currentScreen instanceof GuiChest))
-    		return;
+    		return false;
+    	ItemStack itemInicial = getItemInSlot(slotId);
     	int trueSlot = slotId;
     	if(!chest) {
     		if(trueSlot <= 8) trueSlot+=36;
     		trueSlot += getChestInventory().getSizeInventory()-9;
     	}
         mc.playerController.windowClick(mc.thePlayer.openContainer.windowId, trueSlot, mouseButton, mode, mc.thePlayer);
+        Thread.sleep(750);
+        if(!(mc.currentScreen instanceof GuiChest))
+        	return true;
+        ItemStack novoItem = getItemInSlot(slotId);
+        if(novoItem == null)
+        	return true;
+        if(itemInicial.getDisplayName() == novoItem.getDisplayName())
+        	return false;
+        return true;
     }
     
     public void writeSign(final String s) throws Exception {
@@ -109,6 +120,7 @@ public class ChestManager {
         }
         Thread.sleep(300);
         MCUtils.clickButton("done");
+        Thread.sleep(750);
     }
     
     private int getKeyCodeForChar(char c) {

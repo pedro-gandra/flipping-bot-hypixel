@@ -5,6 +5,11 @@ import java.util.Set;
 
 import org.lwjgl.input.Keyboard;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.inventory.GuiEditSign;
+
 public class KeyboardManager {
 
     private static Set<Integer> currentlyPressed = new HashSet<Integer>();
@@ -12,17 +17,18 @@ public class KeyboardManager {
 
     public static void update() {
         justPressed.clear();
-
-        for (int key = 0; key < Keyboard.KEYBOARD_SIZE; key++) {
-            boolean isDown = Keyboard.isKeyDown(key);
-            boolean wasDown = currentlyPressed.contains(key);
-
-            if (isDown && !wasDown) {
-                justPressed.add(key);
-                currentlyPressed.add(key);
-            } else if (!isDown && wasDown) {
-                currentlyPressed.remove(key);
-            }
+        GuiScreen screen = Minecraft.getMinecraft().currentScreen;
+        if(!(screen instanceof GuiChat) && !(screen instanceof GuiEditSign)) {
+	        for (int key = 0; key < Keyboard.KEYBOARD_SIZE; key++) {
+	            boolean isDown = Keyboard.isKeyDown(key);
+	            boolean wasDown = currentlyPressed.contains(key);
+	            if (isDown && !wasDown) {
+	                justPressed.add(key);
+	                currentlyPressed.add(key);
+	            } else if (!isDown && wasDown) {
+	                currentlyPressed.remove(key);
+	            }
+	        }
         }
     }
 
