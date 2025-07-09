@@ -146,22 +146,26 @@ public class AutoBazaar extends Module {
 				boolean buy = true;
 				mc.thePlayer.sendChatMessage("/bz");
 				Thread.sleep(500);
-				while(ciclos < 100) {
-					if(ciclos==60) {
+				while(ciclos < 60 && this.isToggled()) {
+					om.updateOrderInfo();
+					if(ciclos==30) {
 						logTime("Operated with purchases for: ");
 						buy = false;
 						om.processOrders(buy, true, false);
 					} else {
 						om.processOrders(buy, false, false);
 					}
+					io.sendChat("Ciclo: "+ciclos);
 					Thread.sleep(500);
 					ciclos++;
 				}
-				logTime("Operated with only sells for: ");
-				om.processOrders(false, false, true);
-				om.currentOrders.clear();
-				refreshReady = true;
-				isExecuting = false;
+				if(this.isToggled()) {
+					logTime("Operated with only sells for: ");
+					om.processOrders(false, false, true);
+					om.currentOrders.clear();
+					refreshReady = true;
+					isExecuting = false;
+				}
 			} catch (Exception e) {
 				io.sendError("Falha ao trabalhar no bazaar: " + e.toString() + " - " + e.getMessage());
 				e.printStackTrace();
@@ -173,10 +177,10 @@ public class AutoBazaar extends Module {
 	
 	private void logTime(String mensagem) {
 		if(inicio == 0)
-			inicio = System.nanoTime();
+			inicio = System.currentTimeMillis();
 		else {
-			fim = System.nanoTime();
-			double segundos = (fim-inicio)/1_000_000_000;
+			fim = System.currentTimeMillis();
+			double segundos = (fim-inicio)/1000;
 			io.sendChat(mensagem + segundos + " seconds");
 			inicio = System.nanoTime();
 		}
@@ -207,7 +211,7 @@ public class AutoBazaar extends Module {
 		for (int i = 0; i < limit; i++) {
 		    String key = currentItems.getKeyByIndex(i);
 		    BazaarItem value = currentItems.getByIndex(i);
-		    if(key.contains("cinder")) {
+		    if(key.contains("Cinder")) {
 		    	key = "Cinderbat";
 		    	value.setDisplayName(key);
 		    }

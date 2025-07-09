@@ -65,6 +65,21 @@ public class ChestManager {
         return inv != null ? inv.getStackInSlot(slot) : null;
     }
     
+    public int getAmountInInventory(String name) {
+    	IInventory inv = getPlayerInventory();
+    	if (inv == null) return 0;
+    	int amount = 0;
+    	for (int i = 0; i < inv.getSizeInventory(); i++) {
+            ItemStack item = inv.getStackInSlot(i);
+            if (item != null) {
+	            if(item.getDisplayName().equalsIgnoreCase(name)) {
+	            	amount += item.stackSize;
+	            }
+            }
+    	}
+    	return amount;
+    }
+    
     public int getSlot(String name, String type, boolean chest) {
     	IInventory inv;
     	if(chest)
@@ -98,7 +113,7 @@ public class ChestManager {
     		trueSlot += getChestInventory().getSizeInventory()-9;
     	}
         mc.playerController.windowClick(mc.thePlayer.openContainer.windowId, trueSlot, mouseButton, mode, mc.thePlayer);
-        Thread.sleep(750);
+        Thread.sleep(500);
         if(!(mc.currentScreen instanceof GuiChest))
         	return true;
         ItemStack novoItem = getItemInSlot(slotId);
@@ -118,7 +133,6 @@ public class ChestManager {
             gui.keyTyped(c, keyCode);
             Thread.sleep(50);
         }
-        Thread.sleep(300);
         MCUtils.clickButton("done");
         Thread.sleep(750);
     }
