@@ -21,9 +21,9 @@ import net.minecraft.util.IChatComponent;
 
 public class ChestManager {
 	
+	public final int slotSellInstantly = 11;
 	public final int slotCancelBuy = 11;
 	public final int slotCancelSell = 13;
-	
 	public final int slotSubmit = 13;
 	public final int slotPrice = 12;
 	public final int slotAmount = 16;
@@ -113,7 +113,7 @@ public class ChestManager {
     		trueSlot += getChestInventory().getSizeInventory()-9;
     	}
         mc.playerController.windowClick(mc.thePlayer.openContainer.windowId, trueSlot, mouseButton, mode, mc.thePlayer);
-        Thread.sleep(500);
+        Thread.sleep(800);
         if(!(mc.currentScreen instanceof GuiChest))
         	return true;
         ItemStack novoItem = getItemInSlot(slotId);
@@ -134,7 +134,7 @@ public class ChestManager {
             Thread.sleep(50);
         }
         MCUtils.clickButton("done");
-        Thread.sleep(750);
+        Thread.sleep(800);
     }
     
     private int getKeyCodeForChar(char c) {

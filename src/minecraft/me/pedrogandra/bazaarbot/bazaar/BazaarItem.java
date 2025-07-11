@@ -6,6 +6,7 @@ public class BazaarItem {
     private String productId;
     private String displayName;
     private QuickStatus quickStatus;
+    public Validation validation;
     private List<OrderSummary> sellSummary;
     private List<OrderSummary> buySummary;
 
@@ -31,38 +32,25 @@ public class BazaarItem {
     	long liquidity = Math.min(quickStatus.getBuyMovingWeek(), quickStatus.getSellMovingWeek());
 		return (liquidity/7/24);
     }
+    
+    public static class Validation {
+    	public int buyOrdersCount;
+        public int sellOrdersCount;
+        public boolean failedSearch;
+        public boolean safeSpread;
+    }
 
     public static class QuickStatus {
-        private String productId;
-        private double buyPrice;
-        private long buyVolume;
         private long buyMovingWeek;
         private int buyOrders;
-        private double sellPrice;
-        private long sellVolume;
         private long sellMovingWeek;
         private int sellOrders;
-
-        public String getProductId() { return productId; }
-        public void setProductId(String productId) { this.productId = productId; }
-
-        public double getBuyPrice() { return buyPrice; }
-        public void setBuyPrice(double buyPrice) { this.buyPrice = buyPrice; }
-
-        public long getBuyVolume() { return buyVolume; }
-        public void setBuyVolume(long buyVolume) { this.buyVolume = buyVolume; }
 
         public long getBuyMovingWeek() { return buyMovingWeek; }
         public void setBuyMovingWeek(long buyMovingWeek) { this.buyMovingWeek = buyMovingWeek; }
 
         public int getBuyOrders() { return buyOrders; }
         public void setBuyOrders(int buyOrders) { this.buyOrders = buyOrders; }
-
-        public double getSellPrice() { return sellPrice; }
-        public void setSellPrice(double sellPrice) { this.sellPrice = sellPrice; }
-
-        public long getSellVolume() { return sellVolume; }
-        public void setSellVolume(long sellVolume) { this.sellVolume = sellVolume; }
 
         public long getSellMovingWeek() { return sellMovingWeek; }
         public void setSellMovingWeek(long sellMovingWeek) { this.sellMovingWeek = sellMovingWeek; }

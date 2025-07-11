@@ -38,7 +38,6 @@ public class AutoBazaar extends Module {
 	private DelayManager dm = DelayManager.instance;
 	private OrderManager om = OrderManager.instance;
 	private MCUtils mcu = new MCUtils();
-	private long inicio = 0, fim;
 	
 	public static boolean readPurseNow = false;
 	
@@ -132,7 +131,7 @@ public class AutoBazaar extends Module {
 		        io.sendChat("Dados da API atualizados");
 		        isExecuting = false;
 		    } catch (Exception e) {
-		    	io.sendError("Falha ao coletar dados da API: " + e.toString() + " - " + e.getMessage());
+		    	io.sendError("Falha ao inicializar os items: " + e.toString() + " - " + e.getMessage());
 		        e.printStackTrace();
 		    }
 		}).start();
@@ -142,30 +141,31 @@ public class AutoBazaar extends Module {
 		
 		new Thread(() -> {
 			try {
-				int ciclos = 0;
-				boolean buy = true;
+				boolean buy = true, finished = false;
 				mc.thePlayer.sendChatMessage("/bz");
-				Thread.sleep(500);
-				while(ciclos < 60 && this.isToggled()) {
-					om.updateOrderInfo();
-					if(ciclos==30) {
-						logTime("Operated with purchases for: ");
+				Thread.sleep(800);
+				long start = System.currentTimeMillis();
+				double minutesPassed = 0;
+				while(this.isToggled() && minutesPassed < 30) {
+					if(om.updateOrderInfo() && !buy) {
+						finished = true;
+						break;
+					}
+					if(minutesPassed > 25 && buy) {
 						buy = false;
 						om.processOrders(buy, true, false);
 					} else {
 						om.processOrders(buy, false, false);
 					}
-					io.sendChat("Ciclo: "+ciclos);
-					Thread.sleep(500);
-					ciclos++;
+					minutesPassed = (double) (System.currentTimeMillis() - start)/60000;
+					io.sendChat("Minutes passed: "+io.formatDouble(minutesPassed));
 				}
-				if(this.isToggled()) {
-					logTime("Operated with only sells for: ");
+				if(this.isToggled() && !finished) {
 					om.processOrders(false, false, true);
-					om.currentOrders.clear();
-					refreshReady = true;
-					isExecuting = false;
 				}
+				om.currentOrders.clear();
+				refreshReady = true;
+				isExecuting = false;
 			} catch (Exception e) {
 				io.sendError("Falha ao trabalhar no bazaar: " + e.toString() + " - " + e.getMessage());
 				e.printStackTrace();
@@ -175,18 +175,7 @@ public class AutoBazaar extends Module {
 		
 	}
 	
-	private void logTime(String mensagem) {
-		if(inicio == 0)
-			inicio = System.currentTimeMillis();
-		else {
-			fim = System.currentTimeMillis();
-			double segundos = (fim-inicio)/1000;
-			io.sendChat(mensagem + segundos + " seconds");
-			inicio = System.nanoTime();
-		}
-	}
-	
-	private void filterItems() {
+	private void filterItems() throws Exception {
 		ArrayList<BazaarItem> list = bazaarData.getAllItems();
 		currentItems.clear();
 		for(BazaarItem item : list) {
@@ -200,14 +189,93 @@ public class AutoBazaar extends Module {
 				double bestSell = item.getBestSell();
 				double spread = bestBuy - bestSell;
 				double margin = bestBuy/bestSell;
-				if(hourlyLiquidity*spread > 10000000 && margin > 1.3 && margin < 3 && hourlyLiquidity > 60 && hourlyLiquidity < 10000 && bestSell > 100000) {
+				if(hourlyLiquidity*spread > 8000000 && margin > 1.2 && margin < 3 && hourlyLiquidity > 60 && bestSell > 50000) {
 					currentItems.put(item.getDisplayName(), item);
 				}
 			}
 		}
-		sortItems();
-		IndexedMap<String, BazaarItem> top7 = new IndexedMap<>();
-		int limit = Math.min(7, currentItems.size());
+		sortItemsByProfit();
+		getTopItems(40);
+		itemValidation();
+		sortItemsByCompetition();
+		getTopItems(7);
+	}
+	
+	private void itemValidation() throws Exception {
+		mc.thePlayer.sendChatMessage("/bz");
+		Thread.sleep(800);
+		int repeats = 1;
+		while(repeats <= 3) {
+			for(int i = 0; i < currentItems.size(); i++) {
+				try {
+					
+					BazaarItem item = currentItems.getByIndex(i);
+					String name = item.getDisplayName();
+					cm.clickSlot(cm.slotSearch, 0, 0, true);
+					String write = name.substring(0, Math.min(15, name.length()));
+					cm.writeSign(write);
+					int slot = cm.getSlot(name, "", true);
+					if(slot == -1) {
+						item.validation.failedSearch = true;
+						continue;
+					}
+					cm.clickSlot(slot, 0, 0, true);
+					item.validation.buyOrdersCount += countNewOrders(cm.slotBuy, item.getBestSell(), true);
+					item.validation.sellOrdersCount += countNewOrders(cm.slotSell, item.getBestBuy(), false);
+					if(repeats == 3) {
+						double initialSpread = item.getBestBuy() - item.getBestSell();
+						double lowestSell = om.extractNumberFromTT(cm.slotSell, "each", "", "each");
+						double highestBuy = om.extractNumberFromTT(cm.slotBuy, "each", "", "each");
+						double newSpread = lowestSell - highestBuy;
+						double spreadDiff = (Math.abs(newSpread-initialSpread)/initialSpread);
+						if(spreadDiff > 0.2) 
+							item.validation.safeSpread = false;
+					}
+					
+					cm.clickSlot(cm.slotManageBack, 0, 0, true);
+					
+				} catch(Exception e) {
+					io.sendError("Falha no loop de vaidação de items: " + e.toString());
+				}
+			}
+			repeats++;
+		}
+		
+		for (int i = currentItems.size() - 1; i >= 0; i--) {
+			BazaarItem item = currentItems.getByIndex(i);
+			if(item.validation.failedSearch || !item.validation.safeSpread)
+				currentItems.remove(item.getDisplayName());
+		}
+	}
+	
+	private int countNewOrders(int slot, double oldOrder, boolean buy) throws Exception {
+		ItemStack item = cm.getItemInSlot(slot);
+		if(item != null) {
+			List<String> tt  = item.getTooltip(mc.thePlayer, false);
+			int firstOrderPos = -1;
+			int count = 0;
+			for(String t : tt) {
+				t = mcu.cleanText(t);
+				if(t.contains("each")) {
+					if(firstOrderPos == -1)
+						firstOrderPos = count;
+					int end = t.indexOf("each");
+					t = t.substring(0, end);
+					double order = Double.parseDouble(mcu.getNumber(t));
+					if(buy && order <= oldOrder) 
+						return (count-firstOrderPos);
+					else if(!buy && order >= oldOrder)
+						return (count-firstOrderPos);
+				}
+				count++;
+			}
+		}
+		return 7;
+	}
+	
+	private void getTopItems(int n) {
+		IndexedMap<String, BazaarItem> top = new IndexedMap<>();
+		int limit = Math.min(n, currentItems.size());
 		for (int i = 0; i < limit; i++) {
 		    String key = currentItems.getKeyByIndex(i);
 		    BazaarItem value = currentItems.getByIndex(i);
@@ -215,16 +283,29 @@ public class AutoBazaar extends Module {
 		    	key = "Cinderbat";
 		    	value.setDisplayName(key);
 		    }
-		    top7.put(key, value);
+		    top.put(key, value);
 		}
-		currentItems = top7;
+		currentItems = top;
 	}
 	
-	private void sortItems() {
+	private void sortItemsByProfit() {
 	    currentItems.sort((a, b) -> {
 	        double profitA = a.getHourlyLiquidity() * (a.getBestBuy() - a.getBestSell());
 	        double profitB = b.getHourlyLiquidity() * (b.getBestBuy() - b.getBestSell());
 	        return Double.compare(profitB, profitA);
+	    });
+	}
+	
+	private void sortItemsByCompetition() {
+	    currentItems.sort((a, b) -> {
+	        double competitionA = Math.pow(a.validation.buyOrdersCount, 2) + Math.pow(a.validation.sellOrdersCount, 2);
+	        double competitionB = Math.pow(b.validation.buyOrdersCount, 2) + Math.pow(b.validation.sellOrdersCount, 2);
+	        int result = Double.compare(competitionA, competitionB);
+	        if(result!=0)
+	        	return result;
+	        double ppA = (a.getBestBuy()-a.getBestSell())*a.getHourlyLiquidity();
+	        double ppB = (b.getBestBuy()-b.getBestSell())*b.getHourlyLiquidity();
+	        return Double.compare(ppB, ppA);
 	    });
 	}
 	

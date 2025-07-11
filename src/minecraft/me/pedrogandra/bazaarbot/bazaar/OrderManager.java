@@ -27,9 +27,10 @@ public class OrderManager {
 	public static double initialPurse;
 	public static double currentPurse;
 	
-	public void updateOrderInfo() throws Exception {
+	public boolean updateOrderInfo() throws Exception {
 		IndexedMap<String, BazaarItem> itemList = bz.getCurrentItems();
 		int size = itemList.size();
+		int nSells = 0;
 		cm.clickSlot(cm.slotManage, 0, 0, true);
 		for(int i = 0; i < size; i++) {
 			BazaarItem item = itemList.getByIndex(i);
@@ -51,6 +52,7 @@ public class OrderManager {
 			if(slotSell == -1)
 				o.currentSellAmount = 0;
 			else {
+				nSells++;
 				double qtd = extractNumberFromTT(slotSell, "Offer amount", "", "");
 				double filled = extractNumberFromTT(slotSell, "Filled:", "", "/");
 				if(filled != -1)
@@ -62,6 +64,7 @@ public class OrderManager {
 		}
 		mc.thePlayer.sendChatMessage("/bz");
 		Thread.sleep(500);
+		return (nSells==0);
 	}
 	
 	public void processOrders(boolean buyToggled, boolean removeAllBuys, boolean removeAllSells) throws Exception {
@@ -75,6 +78,8 @@ public class OrderManager {
 				BazaarItem item = itemList.getByIndex(i);
 				String name = item.getDisplayName();
 				BazaarOrder o = currentOrders.get(name);
+				if(!buyToggled && !removeAllBuys && o.currentSellAmount == 0 && o.currentInventoryAmount == 0)
+					continue;
 				cm.clickSlot(cm.slotSearch, 0, 0, true);
 				String write = name.substring(0, Math.min(15, name.length()));
 				cm.writeSign(write);
@@ -90,12 +95,17 @@ public class OrderManager {
 					o = new BazaarOrder(name);
 					if(createBuyOrder(o, investment, highestBuy)) {
 						currentOrders.put(name, o);
+						o.lastChecked = System.currentTimeMillis();
 					}
 					continue;
 				}
 				
-				if (removeAllBuys || removeAllSells || (o.currentBuyAmount > 0 && highestBuy != o.currentPurchasePrice) || (o.currentSellAmount > 0 && lowestSell != o.currentSalePrice)) {
+				long now = System.currentTimeMillis();
+				double sinceCheck = (double) (now - o.lastChecked)/1000;
+				
+				if (sinceCheck > 120 || removeAllBuys || removeAllSells || (o.currentBuyAmount > 0 && highestBuy != o.currentPurchasePrice) || (o.currentSellAmount > 0 && lowestSell != o.currentSalePrice)) {
 					cm.clickSlot(cm.slotManageShort, 0, 0, true);
+					o.lastChecked = System.currentTimeMillis();
 					int slotBuy = cm.getSlot(o.productName, "BUY", true);
 					int slotSell = cm.getSlot(o.productName, "SELL", true);
 					double bought = 0, sold = 0;
@@ -115,6 +125,9 @@ public class OrderManager {
 						if(removeAllSells) {
 							Thread.sleep(2500);
 							removeSellOrder(slotSell, o);
+							int slotPlayer = cm.getSlot(name, "", false);
+							cm.clickSlot(slotPlayer, 0, 0, false);
+							cm.clickSlot(cm.slotSellInstantly, 0, 0, true);
 						} else if(o.currentSellAmount > 0 && lowestSell < o.currentSalePrice) {
 							if(updateBuy)
 								Thread.sleep(3500);
@@ -238,7 +251,7 @@ public class OrderManager {
 		return success;
 	}
 	
-	private double extractNumberFromTT(int slot, String search, String s1, String s2) throws Exception {
+	public double extractNumberFromTT(int slot, String search, String s1, String s2) throws Exception {
 		ItemStack item = cm.getItemInSlot(slot);
 		if(item != null) {
 			List<String> tt  = item.getTooltip(mc.thePlayer, false);

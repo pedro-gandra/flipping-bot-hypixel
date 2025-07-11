@@ -74,8 +74,10 @@ public class GuiIngameHook extends GuiIngame {
 	    double bestSell = item.getBestSell();
 	    double spread = bestBuy - bestSell;
 	    double hourlyLiquidity = item.getHourlyLiquidity();
+	    int nb = item.validation.buyOrdersCount;
+	    int ns = item.validation.sellOrdersCount;
 
-	    int x = 500;
+	    int x = 650;
 	    int y = 10;
 	    int width = 180;
 	    drawCenterTextRect("Total de items: " + bz.getCurrentItems().size(), x, y, width, 15, 0x90000000, 0xFFFFFF);
@@ -91,6 +93,8 @@ public class GuiIngameHook extends GuiIngame {
 	    drawCenterTextRect("items per hour: " + io.formatDouble(hourlyLiquidity), x, y, width, 15, 0x90000000, 0xFF5555);
 	    y+=15;
 	    drawCenterTextRect("Perfect profit: " + io.formatDouble(hourlyLiquidity*spread), x, y, width, 15, 0x90000000, 0xFF5555);
+	    y+=15;
+	    drawCenterTextRect("Order increase: " + nb + " - " + ns, x, y, width, 15, 0x90000000, 0xFF5555);
 	}
 
 }

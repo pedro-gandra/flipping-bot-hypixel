@@ -385,7 +385,7 @@ public class FontRenderer implements IResourceManagerReloadListener
 	    		if(AutoBazaar.readPurseNow) {
 		    		AutoBazaar.readPurseNow = false;
 		    		OrderManager.initialPurse = purse;
-		    		IOManager.sendChat(purse+"");
+		    		IOManager.sendChat(IOManager.formatDouble(purse));
 	    		} else {
 	    			OrderManager.currentPurse = purse;
 	    		}

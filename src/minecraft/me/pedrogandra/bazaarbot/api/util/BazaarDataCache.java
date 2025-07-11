@@ -29,17 +29,17 @@ public class BazaarDataCache {
 
             BazaarItem item = new BazaarItem();
             item.setProductId(productId);
-
+            
+            item.validation = new BazaarItem.Validation();
+            item.validation.buyOrdersCount = 0;
+            item.validation.sellOrdersCount = 0;
+            item.validation.failedSearch = false;
+            item.validation.safeSpread = true;
             
             JsonObject quick = product.getAsJsonObject("quick_status");
             BazaarItem.QuickStatus status = new BazaarItem.QuickStatus();
-            status.setProductId(quick.get("productId").getAsString());
-            status.setBuyPrice(quick.get("buyPrice").getAsDouble());
-            status.setBuyVolume(quick.get("buyVolume").getAsLong());
             status.setBuyMovingWeek(quick.get("buyMovingWeek").getAsLong());
             status.setBuyOrders(quick.get("buyOrders").getAsInt());
-            status.setSellPrice(quick.get("sellPrice").getAsDouble());
-            status.setSellVolume(quick.get("sellVolume").getAsLong());
             status.setSellMovingWeek(quick.get("sellMovingWeek").getAsLong());
             status.setSellOrders(quick.get("sellOrders").getAsInt());
             item.setQuickStatus(status);
@@ -70,7 +70,7 @@ public class BazaarDataCache {
             }
             item.setBuySummary(buyList);
             
-            item.setDisplayName(getDisplayName(productId));
+            item.setDisplayName(displayName);
             
             itemList.add(item);
         }

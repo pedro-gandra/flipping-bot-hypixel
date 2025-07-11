@@ -8,12 +8,11 @@ public class BazaarOrder {
 	public double currentInventoryAmount;
 	public double currentPurchasePrice;
 	public double currentSalePrice;
-	public boolean updateBuy;
+	public long lastChecked;
 	
 	public BazaarOrder(String name) {
 		this.productName = name;
 		this.currentBuyAmount = this.currentSellAmount = this.currentInventoryAmount = 0;
-		this.updateBuy = false;
 	}
 	
 }
