@@ -32,10 +32,12 @@ public class ChestManager {
 	public final int slotSearch = 45;
 	public final int slotManage = 50;
 	public final int slotManageShort = 32;
-	public final int slotManageBack = 31;
+	public final int slotProductBack = 31;
+	public final int slotSellInventory = 47;
+	public final int slotConfirmSellInventory = 11;
 	
     private final Minecraft mc = Minecraft.getMinecraft();
-    private DelayManager dm = DelayManager.instance;
+    private final MCUtils mcu = new MCUtils();
 
     public GuiChest getOpenChest() {
         if (mc.currentScreen instanceof GuiChest) {
@@ -78,6 +80,19 @@ public class ChestManager {
             }
     	}
     	return amount;
+    }
+    
+    public boolean ttHas(int slot, String str) {
+    	ItemStack item = getItemInSlot(slot);
+    	if(item!=null) {
+    		List<String> tt  = item.getTooltip(mc.thePlayer, false);
+			for(String t : tt) {
+				t = mcu.cleanText(t).toLowerCase();
+				if(t.contains(str.toLowerCase()))
+					return true;
+			}
+    	}
+    	return false;
     }
     
     public int getSlot(String name, String type, boolean chest) {

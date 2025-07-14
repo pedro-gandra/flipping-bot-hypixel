@@ -1067,6 +1067,10 @@ public class Minecraft implements IThreadListener, IPlayerUsage
      */
     private void runGameLoop() throws IOException
     {
+    	
+    	//BazaarBot
+    	BazaarBot.instance.checkReset();
+    	
         long i = System.nanoTime();
         this.mcProfiler.startSection("root");
 
@@ -1726,7 +1730,7 @@ public class Minecraft implements IThreadListener, IPlayerUsage
         {
             --this.rightClickDelayTimer;
         }
-
+        
         this.mcProfiler.startSection("gui");
 
         if (!this.isGamePaused)

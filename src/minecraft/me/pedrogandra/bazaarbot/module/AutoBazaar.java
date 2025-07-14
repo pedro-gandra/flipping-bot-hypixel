@@ -26,17 +26,15 @@ import net.minecraft.item.ItemStack;
 public class AutoBazaar extends Module {
 	
 	public static AutoBazaar instance;
-	private boolean refreshReady = false;
-	private boolean isExecuting = false;
 	private BazaarDataCache bazaarData = new BazaarDataCache();
 	private HypixelApiClient api = new HypixelApiClient();
-	private IndexedMap<String, BazaarItem> currentItems;
+	private IndexedMap<String, BazaarItem> currentItems = new IndexedMap<>();
 	private int currentIndex = 0;
 	private ChestManager cm = new ChestManager();
 	private IOManager io = new IOManager();
 	private TestString ts = TestString.instance;
-	private DelayManager dm = DelayManager.instance;
 	private OrderManager om = OrderManager.instance;
+	private ResetManager rm = new ResetManager();
 	private MCUtils mcu = new MCUtils();
 	
 	public static boolean readPurseNow = false;
@@ -58,24 +56,27 @@ public class AutoBazaar extends Module {
 	}
 	
 	public BazaarItem getItemAt(int i) {
-		if (currentItems == null || currentItems.isEmpty()) return null;
+		if (currentItems.isEmpty()) return null;
 		return currentItems.getByIndex(i);
 	}
 	
 	public BazaarItem getItemNamed(String name) {
-		if (currentItems == null || currentItems.isEmpty()) return null;
+		if (currentItems.isEmpty()) return null;
 		return currentItems.getByKey(name);
 	}
 	
 	public void onEnable() {
-		isExecuting = true;
-		currentItems = new IndexedMap<>();
+		this.setToggled(true);
+		currentIndex = 0;
+		currentItems.clear();
+		om.currentOrders.clear();
 		new Thread(() -> {
             try {
             	JsonArray itemJson = api.getItemData();
         		bazaarData.loadDisplayNamesFromJson(itemJson);
-        		refreshReady = true;
-        		isExecuting = false;
+        		readPurseNow = true;
+        		callApiBazaar();
+        		manageOrders();
             } catch (Exception e) {
             	io.sendError("Falha ao inicializar bot: " + e.toString());
                 e.printStackTrace();
@@ -84,8 +85,7 @@ public class AutoBazaar extends Module {
 	}
 	
 	public void onDisable() {
-		refreshReady = false;
-		isExecuting = false;
+		this.setToggled(false);
 		currentIndex = 0;
 		currentItems.clear();
 		om.currentOrders.clear();
@@ -94,17 +94,6 @@ public class AutoBazaar extends Module {
 	public void onUpdate() {
 		
 		if(this.isToggled()) {
-			//main logic
-			if(!isExecuting) {
-				isExecuting = true;
-				if (refreshReady) {
-				    refreshReady = false;
-				    readPurseNow = true;
-				    callApiBazaar();
-				} else {
-					manageOrders();
-				}
-			}
 			
 			//navigate cards
 			if(currentItems != null && !currentItems.isEmpty()) {
@@ -123,34 +112,27 @@ public class AutoBazaar extends Module {
 	}
 	
 	private void callApiBazaar() {
-		new Thread(() -> {
-		    try {
-		        JsonObject json = api.getBazaarData();
-		        bazaarData.updateFromJson(json);
-		        filterItems();
-		        io.sendChat("Dados da API atualizados");
-		        isExecuting = false;
-		    } catch (Exception e) {
-		    	io.sendError("Falha ao inicializar os items: " + e.toString() + " - " + e.getMessage());
-		        e.printStackTrace();
-		    }
-		}).start();
+	    try {
+	        JsonObject json = api.getBazaarData();
+	        bazaarData.updateFromJson(json);
+	        filterItems();
+	        io.sendChat("Dados da API atualizados");
+	    } catch (Exception e) {
+	    	io.sendError("Falha ao inicializar os items: " + e.toString() + " - " + e.getMessage());
+	        e.printStackTrace();
+	    }
 	}
 	
 	private void manageOrders() {
-		
-		new Thread(() -> {
-			try {
-				boolean buy = true, finished = false;
-				mc.thePlayer.sendChatMessage("/bz");
-				Thread.sleep(800);
-				long start = System.currentTimeMillis();
-				double minutesPassed = 0;
-				while(this.isToggled() && minutesPassed < 30) {
-					if(om.updateOrderInfo() && !buy) {
-						finished = true;
-						break;
-					}
+		try {
+			boolean buy = true;
+			mc.thePlayer.sendChatMessage("/bz");
+			Thread.sleep(800);
+			long start = System.currentTimeMillis();
+			double minutesPassed = 0;
+			while(this.isToggled() && minutesPassed < 30) {
+				try {
+					om.updateOrderInfo();
 					if(minutesPassed > 25 && buy) {
 						buy = false;
 						om.processOrders(buy, true, false);
@@ -159,20 +141,18 @@ public class AutoBazaar extends Module {
 					}
 					minutesPassed = (double) (System.currentTimeMillis() - start)/60000;
 					io.sendChat("Minutes passed: "+io.formatDouble(minutesPassed));
+				} catch (Exception e) {
+					io.sendError("Falha ao rodar o ciclo: " + e.toString());
 				}
-				if(this.isToggled() && !finished) {
-					om.processOrders(false, false, true);
-				}
-				om.currentOrders.clear();
-				refreshReady = true;
-				isExecuting = false;
-			} catch (Exception e) {
-				io.sendError("Falha ao trabalhar no bazaar: " + e.toString() + " - " + e.getMessage());
-				e.printStackTrace();
 			}
-			
-		}).start();
-		
+			if(this.isToggled()) {
+				om.processOrders(false, false, true);
+				rm.inGameReset();
+			}
+		} catch (Exception e) {
+			io.sendError("Falha ao trabalhar no bazaar: " + e.toString());
+			e.printStackTrace();
+		}
 	}
 	
 	private void filterItems() throws Exception {
@@ -189,16 +169,16 @@ public class AutoBazaar extends Module {
 				double bestSell = item.getBestSell();
 				double spread = bestBuy - bestSell;
 				double margin = bestBuy/bestSell;
-				if(hourlyLiquidity*spread > 8000000 && margin > 1.2 && margin < 3 && hourlyLiquidity > 60 && bestSell > 50000) {
+				if(hourlyLiquidity*spread > 8000000 && margin > 1.2 && margin < 3 && hourlyLiquidity > 20 && bestSell > 50000) {
 					currentItems.put(item.getDisplayName(), item);
 				}
 			}
 		}
 		sortItemsByProfit();
-		getTopItems(40);
+		getTopItems(50);
 		itemValidation();
 		sortItemsByCompetition();
-		getTopItems(7);
+		getTopItems(10);
 	}
 	
 	private void itemValidation() throws Exception {
@@ -227,12 +207,12 @@ public class AutoBazaar extends Module {
 						double lowestSell = om.extractNumberFromTT(cm.slotSell, "each", "", "each");
 						double highestBuy = om.extractNumberFromTT(cm.slotBuy, "each", "", "each");
 						double newSpread = lowestSell - highestBuy;
-						double spreadDiff = (Math.abs(newSpread-initialSpread)/initialSpread);
+						double spreadDiff = (initialSpread-newSpread)/initialSpread;
 						if(spreadDiff > 0.2) 
 							item.validation.safeSpread = false;
 					}
 					
-					cm.clickSlot(cm.slotManageBack, 0, 0, true);
+					cm.clickSlot(cm.slotProductBack, 0, 0, true);
 					
 				} catch(Exception e) {
 					io.sendError("Falha no loop de vaidação de items: " + e.toString());
