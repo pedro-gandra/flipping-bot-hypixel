@@ -2,7 +2,6 @@ package net.minecraft.client.entity;
 
 import me.pedrogandra.bazaarbot.BazaarBot;
 import me.pedrogandra.bazaarbot.commands.CommandManager;
-import me.pedrogandra.bazaarbot.utils.DelayManager;
 import me.pedrogandra.bazaarbot.utils.KeyboardManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MovingSoundMinecartRiding;
@@ -725,7 +724,6 @@ public class EntityPlayerSP extends AbstractClientPlayer
     	
     	//BazaarBot
     	KeyboardManager.update();
-    	DelayManager.instance.onTick();
     	BazaarBot.moduleManager.onUpdate();
     	
         if (this.sprintingTicksLeft > 0)
