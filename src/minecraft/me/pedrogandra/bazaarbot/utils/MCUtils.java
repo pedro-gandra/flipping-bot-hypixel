@@ -15,7 +15,7 @@ public class MCUtils {
 	public static String getNumber(String text) {
 		return text.replaceAll("[^\\d.]", "");
 	}
-	
+
 	public static void clickButton(String label) {
 		
         GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;

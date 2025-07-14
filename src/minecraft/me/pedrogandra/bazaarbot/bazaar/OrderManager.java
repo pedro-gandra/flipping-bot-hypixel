@@ -24,13 +24,12 @@ public class OrderManager {
 	private MCUtils mcu = new MCUtils();
 	private IOManager io = new IOManager();
 	public Map<String, BazaarOrder> currentOrders = new HashMap<>();
-	public static double initialPurse;
-	public static double currentPurse;
+	private static double initialPurse;
+	private static double currentPurse;
 	
-	public boolean updateOrderInfo() throws Exception {
+	public void updateOrderInfo() throws Exception {
 		IndexedMap<String, BazaarItem> itemList = bz.getCurrentItems();
 		int size = itemList.size();
-		int nSells = 0;
 		cm.clickSlot(cm.slotManage, 0, 0, true);
 		for(int i = 0; i < size; i++) {
 			BazaarItem item = itemList.getByIndex(i);
@@ -52,7 +51,6 @@ public class OrderManager {
 			if(slotSell == -1)
 				o.currentSellAmount = 0;
 			else {
-				nSells++;
 				double qtd = extractNumberFromTT(slotSell, "Offer amount", "", "");
 				double filled = extractNumberFromTT(slotSell, "Filled:", "", "/");
 				if(filled != -1)
@@ -64,7 +62,6 @@ public class OrderManager {
 		}
 		mc.thePlayer.sendChatMessage("/bz");
 		Thread.sleep(500);
-		return (nSells==0);
 	}
 	
 	public void processOrders(boolean buyToggled, boolean removeAllBuys, boolean removeAllSells) throws Exception {
@@ -115,8 +112,8 @@ public class OrderManager {
 							Thread.sleep(2500);
 							removeBuyOrder(slotBuy, o);
 						} else if(o.currentBuyAmount > 0 && highestBuy > o.currentPurchasePrice) {
-							if(removeBuyOrder(slotBuy, o))
-								updateBuy = true;
+							removeBuyOrder(slotBuy, o);
+							updateBuy = true;
 						}
 					}	
 					
@@ -131,13 +128,14 @@ public class OrderManager {
 						} else if(o.currentSellAmount > 0 && lowestSell < o.currentSalePrice) {
 							if(updateBuy)
 								Thread.sleep(3500);
-							if(removeSellOrder(slotSell, o))
-								updateSell = true;
+							removeSellOrder(slotSell, o);
+							updateSell = true;
 						}
 					}
 					
 					if(buyToggled && (updateBuy || slotBuy == -1)) {
-						cm.clickSlot(cm.slotManageBack, 0, 0, true);
+						int slotManageBack = cm.getSlot("Go Back", "", true);
+						cm.clickSlot(slotManageBack, 0, 0, true);
 						createBuyOrder(o, investment, highestBuy);
 					}
 					
@@ -176,13 +174,23 @@ public class OrderManager {
 		return success;
 	}
 	
-	private boolean removeBuyOrder(int slot, BazaarOrder o) throws Exception {
-		boolean success = true;
-		success = (success && cm.clickSlot(slot, 0, 0, true));
-		success = (success && cm.clickSlot(cm.slotCancelBuy, 0, 0, true));
-		if(success)
+	public void removeBuyOrder(int slot, BazaarOrder o) throws Exception {
+		
+		String name = mcu.cleanText(cm.getItemInSlot(slot).getDisplayName());
+		while(slot != -1) {
+			cm.clickSlot(slot, 0, 0, true);
+			ItemStack item = cm.getItemInSlot(cm.slotCancelBuy);
+			if(item != null) {
+				String nameCancel = mcu.cleanText(item.getDisplayName());
+				if(nameCancel!=null && nameCancel.contains("Cancel Order")) {
+					while(!(cm.clickSlot(cm.slotCancelBuy, 0, 0, true)))
+					break;
+				}
+			}
+			slot = cm.getSlot(name, "", true);
+		}
+		if(o!=null)
 			o.currentBuyAmount = 0;
-		return success;
 	}
 	
 	private double collectBuys(int slotBuy, BazaarOrder o) throws Exception {
@@ -204,13 +212,22 @@ public class OrderManager {
         return bought;
 	}
 	
-	private boolean removeSellOrder(int slot, BazaarOrder o) throws Exception {
-		boolean success = true;
-		success = (success && cm.clickSlot(slot, 0, 0, true));
-		success = (success && cm.clickSlot(cm.slotCancelSell, 0, 0, true));
-		if(success)
+	public void removeSellOrder(int slot, BazaarOrder o) throws Exception {
+		String name = mcu.cleanText(cm.getItemInSlot(slot).getDisplayName());
+		while(slot != -1) {
+			cm.clickSlot(slot, 0, 0, true);
+			ItemStack item = cm.getItemInSlot(cm.slotCancelSell);
+			if(item != null) {
+				String nameCancel = mcu.cleanText(item.getDisplayName());
+				if(nameCancel!=null && nameCancel.contains("Cancel Order")) {
+					while(!(cm.clickSlot(cm.slotCancelSell, 0, 0, true)))
+					break;
+				}
+			}
+			slot = cm.getSlot(name, "", true);
+		}
+		if(o!=null)
 			o.currentSellAmount = 0;
-		return success;
 	}
 	
 	private double collectSells(int slotSell, BazaarOrder o) throws Exception {
@@ -278,6 +295,14 @@ public class OrderManager {
 			BazaarOrder o = map.getValue();
 			IOManager.sendChat(o.productName + ": " + (o.currentBuyAmount/o.currentPurchasePrice) + " / " + o.currentPurchasePrice);
 		}
+	}
+	
+	public static void setInitialPurse(double p) {
+		initialPurse = Math.min(p, 500000000);
+	}
+	
+	public static void setCurrentPurse(double p) {
+		currentPurse = p;
 	}
 	
 }

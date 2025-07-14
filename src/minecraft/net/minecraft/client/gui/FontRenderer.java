@@ -384,10 +384,10 @@ public class FontRenderer implements IResourceManagerReloadListener
 	    		purse = Double.parseDouble(MCUtils.getNumber(MCUtils.cleanText(text)));
 	    		if(AutoBazaar.readPurseNow) {
 		    		AutoBazaar.readPurseNow = false;
-		    		OrderManager.initialPurse = purse;
+		    		OrderManager.setInitialPurse(purse);
 		    		IOManager.sendChat(IOManager.formatDouble(purse));
 	    		} else {
-	    			OrderManager.currentPurse = purse;
+	    			OrderManager.setCurrentPurse(purse);
 	    		}
     		} catch(Exception e) {
     			IOManager.sendError("Falha ao processar purse: " + e.toString() + " - " + e.getMessage());
