@@ -3,7 +3,7 @@ package net.minecraft.client.renderer;
 import com.google.common.base.Predicates;
 import com.google.gson.JsonSyntaxException;
 
-import me.pedrogandra.bazaarbot.BazaarBot;
+import me.pedrogandra.flippingbot.FlippingBot;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -1660,8 +1660,8 @@ public class EntityRenderer implements IResourceManagerReloadListener
 
         this.mc.mcProfiler.endStartSection("hand");
         
-        //BazaarBot
-        BazaarBot.moduleManager.onRender();
+        //FlippingBot
+        FlippingBot.moduleManager.onRender();
         
         boolean flag3 = Reflector.callBoolean(Reflector.ForgeHooksClient_renderFirstPersonHand, new Object[] {this.mc.renderGlobal, Float.valueOf(partialTicks), Integer.valueOf(pass)});
 

@@ -1,8 +1,8 @@
 package net.minecraft.client.entity;
 
-import me.pedrogandra.bazaarbot.BazaarBot;
-import me.pedrogandra.bazaarbot.commands.CommandManager;
-import me.pedrogandra.bazaarbot.utils.KeyboardManager;
+import me.pedrogandra.flippingbot.FlippingBot;
+import me.pedrogandra.flippingbot.commands.CommandManager;
+import me.pedrogandra.flippingbot.utils.KeyboardManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MovingSoundMinecartRiding;
 import net.minecraft.client.audio.PositionedSoundRecord;
@@ -298,7 +298,7 @@ public class EntityPlayerSP extends AbstractClientPlayer
      */
     public void sendChatMessage(String message)
     {	
-    	//BazaarBot
+    	//FlippingBot
     	if(CommandManager.handleCommand(message))
     		return;
     	
@@ -722,9 +722,9 @@ public class EntityPlayerSP extends AbstractClientPlayer
     public void onLivingUpdate()
     {
     	
-    	//BazaarBot
+    	//FlippingBot
     	KeyboardManager.update();
-    	BazaarBot.moduleManager.onUpdate();
+    	FlippingBot.moduleManager.onUpdate();
     	
         if (this.sprintingTicksLeft > 0)
         {

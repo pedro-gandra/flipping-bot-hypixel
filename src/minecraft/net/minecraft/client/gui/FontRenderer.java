@@ -4,10 +4,10 @@ import com.ibm.icu.text.ArabicShaping;
 import com.ibm.icu.text.ArabicShapingException;
 import com.ibm.icu.text.Bidi;
 
-import me.pedrogandra.bazaarbot.bazaar.OrderManager;
-import me.pedrogandra.bazaarbot.module.AutoBazaar;
-import me.pedrogandra.bazaarbot.utils.IOManager;
-import me.pedrogandra.bazaarbot.utils.MCUtils;
+import me.pedrogandra.flippingbot.bazaar.OrderManager;
+import me.pedrogandra.flippingbot.module.AutoBazaar;
+import me.pedrogandra.flippingbot.utils.IOManager;
+import me.pedrogandra.flippingbot.utils.MCUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
@@ -377,7 +377,7 @@ public class FontRenderer implements IResourceManagerReloadListener
     public int drawString(String text, float x, float y, int color, boolean dropShadow)
     {
     	
-    	//BazaarBot
+    	//FlippingBot
     	if(text.contains("Purse:")) {
     		try {
 	    		double purse;

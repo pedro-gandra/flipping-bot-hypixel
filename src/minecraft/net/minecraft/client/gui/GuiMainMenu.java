@@ -2,7 +2,7 @@ package net.minecraft.client.gui;
 
 import com.google.common.collect.Lists;
 
-import me.pedrogandra.bazaarbot.auth.GuiAuthManager;
+import me.pedrogandra.flippingbot.auth.GuiAuthManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;

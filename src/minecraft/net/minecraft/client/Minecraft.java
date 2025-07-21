@@ -14,8 +14,8 @@ import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 
-import me.pedrogandra.bazaarbot.BazaarBot;
-import me.pedrogandra.bazaarbot.gui.GuiIngameHook;
+import me.pedrogandra.flippingbot.FlippingBot;
+import me.pedrogandra.flippingbot.gui.GuiIngameHook;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -564,8 +564,8 @@ public class Minecraft implements IThreadListener, IPlayerUsage
         this.checkGLError("Post startup");
         this.ingameGUI = new GuiIngameHook(this);
         
-        //BazaarBot
-        BazaarBot.startClient();
+        //FlippingBot
+        FlippingBot.startClient();
 
         if (this.serverName != null)
         {
@@ -623,7 +623,7 @@ public class Minecraft implements IThreadListener, IPlayerUsage
     private void createDisplay() throws LWJGLException
     {
         Display.setResizable(true);
-        Display.setTitle("Loading BazaarBot");
+        Display.setTitle("Loading FlippingBot");
 
         try
         {
@@ -1068,8 +1068,8 @@ public class Minecraft implements IThreadListener, IPlayerUsage
     private void runGameLoop() throws IOException
     {
     	
-    	//BazaarBot
-    	BazaarBot.instance.checkReset();
+    	//FlippingBot
+    	FlippingBot.instance.checkReset();
     	
         long i = System.nanoTime();
         this.mcProfiler.startSection("root");
@@ -1930,8 +1930,8 @@ public class Minecraft implements IThreadListener, IPlayerUsage
                     else
                     {
                     	
-                    	//BazaarBot
-                    	BazaarBot.moduleManager.onKey(k);
+                    	//FlippingBot
+                    	FlippingBot.moduleManager.onKey(k);
                     	
                         if (k == 1)
                         {
