@@ -10,6 +10,7 @@ public class ModuleManager {
 		mods = new ArrayList<Module>();
 		
 		newMod(new AutoBazaar());
+		newMod(new AutoBIN());
 	}
 	
 	public static void newMod(Module m) {

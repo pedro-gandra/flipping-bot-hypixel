@@ -370,6 +370,15 @@ public class FontRenderer implements IResourceManagerReloadListener
     {
         return !this.enabled ? 0 : this.drawString(text, (float)x, (float)y, color, false);
     }
+    
+    public int drawStringScale(String text, int x, int y, int color, float scale) {
+    	GlStateManager.pushMatrix();
+    	GlStateManager.translate(x, y, 0);
+    	GlStateManager.scale(scale, scale, 1.0f); 
+    	int result = !this.enabled ? 0 : this.drawString(text, 0, 0, color, false);
+    	GlStateManager.popMatrix();
+    	return result+x;
+    }
 
     /**
      * Draws the specified string.
@@ -642,11 +651,15 @@ public class FontRenderer implements IResourceManagerReloadListener
             {
                 color = (color & 16579836) >> 2 | color & -16777216;
             }
+            
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+            GlStateManager.disableAlpha();
 
+            this.alpha = (float)(color >> 24 & 255) / 255.0F;
             this.red = (float)(color >> 16 & 255) / 255.0F;
             this.blue = (float)(color >> 8 & 255) / 255.0F;
             this.green = (float)(color & 255) / 255.0F;
-            this.alpha = (float)(color >> 24 & 255) / 255.0F;
             GlStateManager.color(this.red, this.blue, this.green, this.alpha);
             this.posX = x;
             this.posY = y;

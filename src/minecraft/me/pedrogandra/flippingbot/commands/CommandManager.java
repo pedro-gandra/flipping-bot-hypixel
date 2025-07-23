@@ -3,6 +3,7 @@ package me.pedrogandra.flippingbot.commands;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
+import me.pedrogandra.flippingbot.commands.auction.ItemList;
 import me.pedrogandra.flippingbot.commands.tests.TestString;
 import me.pedrogandra.flippingbot.commands.util.SetApiKey;
 import me.pedrogandra.flippingbot.module.Module;
@@ -18,6 +19,7 @@ public class CommandManager {
 	        commands = new ArrayList<Command>();
 	        newCommand(new TestString());
 	        newCommand(new SetApiKey());
+	        newCommand(new ItemList());
 	    }
 	}
 	

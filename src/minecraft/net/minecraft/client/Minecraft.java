@@ -15,7 +15,9 @@ import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 
 import me.pedrogandra.flippingbot.FlippingBot;
+import me.pedrogandra.flippingbot.gui.GuiAuctionForm;
 import me.pedrogandra.flippingbot.gui.GuiIngameHook;
+import me.pedrogandra.flippingbot.utils.IOManager;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -259,7 +261,7 @@ public class Minecraft implements IThreadListener, IPlayerUsage
 
     /** Gui achievement */
     public GuiAchievement guiAchievement;
-    public GuiIngame ingameGUI;
+    public GuiIngameHook ingameGUI;
 
     /** Skip render world */
     public boolean skipRenderWorld;
@@ -970,6 +972,12 @@ public class Minecraft implements IThreadListener, IPlayerUsage
      */
     public void displayGuiScreen(GuiScreen guiScreenIn)
     {
+    	if(this.currentScreen instanceof GuiAuctionForm && guiScreenIn == null) {
+    		GuiAuctionForm screen = (GuiAuctionForm) this.currentScreen;
+    		if(screen.lockScreen == true)
+    			return;
+    	}
+    	
         if (this.currentScreen != null)
         {
             this.currentScreen.onGuiClosed();
