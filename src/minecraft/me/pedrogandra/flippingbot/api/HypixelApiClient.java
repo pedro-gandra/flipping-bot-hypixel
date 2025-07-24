@@ -25,6 +25,11 @@ public class HypixelApiClient {
         String endpoint = BASE_URL + "/resources/skyblock/items?key=" + API_KEY;
         return makeRequest(endpoint, true).getAsJsonArray("items");
     }
+    
+    public JsonArray getAuctionData() throws Exception {
+        String endpoint = BASE_URL + "/skyblock/auctions?page=0";
+        return makeRequest(endpoint, false).getAsJsonArray("auctions");
+    }
 
     private JsonObject makeRequest(String endpoint, boolean authRequired) throws Exception {
         URL url = new URL(endpoint);
