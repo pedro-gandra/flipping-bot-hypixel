@@ -4,6 +4,7 @@ import com.ibm.icu.text.ArabicShaping;
 import com.ibm.icu.text.ArabicShapingException;
 import com.ibm.icu.text.Bidi;
 
+import me.pedrogandra.flippingbot.FlippingBot;
 import me.pedrogandra.flippingbot.bazaar.OrderManager;
 import me.pedrogandra.flippingbot.module.AutoBazaar;
 import me.pedrogandra.flippingbot.utils.IOManager;
@@ -396,7 +397,7 @@ public class FontRenderer implements IResourceManagerReloadListener
 		    		OrderManager.setInitialPurse(purse);
 		    		IOManager.sendChat(IOManager.formatDouble(purse));
 	    		} else {
-	    			OrderManager.setCurrentPurse(purse);
+	    			FlippingBot.currentPurse = purse;
 	    		}
     		} catch(Exception e) {
     			IOManager.sendError("Falha ao processar purse: " + e.toString() + " - " + e.getMessage());

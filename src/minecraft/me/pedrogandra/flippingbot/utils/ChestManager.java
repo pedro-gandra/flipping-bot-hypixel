@@ -36,6 +36,9 @@ public class ChestManager {
 	public final int slotSellInventory = 47;
 	public final int slotConfirmSellInventory = 11;
 	
+	public final int slotBuyBIN = 31;
+	public final int slotConfirmBIN = 11;
+	
     private final Minecraft mc = Minecraft.getMinecraft();
     private final MCUtils mcu = new MCUtils();
 

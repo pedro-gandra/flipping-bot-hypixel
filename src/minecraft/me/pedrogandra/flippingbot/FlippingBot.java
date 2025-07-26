@@ -22,7 +22,8 @@ public class FlippingBot {
 	public static WorldClient lastWorld = null;
 	public static boolean failedReset = false;
 	private final Minecraft mc = Minecraft.getMinecraft();
-	private ResetManager rm = new ResetManager(); 
+	private ResetManager rm = new ResetManager();
+	public static double currentPurse;
 	
 	public static void startClient() {
 		moduleManager = new ModuleManager();

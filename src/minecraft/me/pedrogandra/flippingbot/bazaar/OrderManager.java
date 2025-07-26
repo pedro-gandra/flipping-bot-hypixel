@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.pedrogandra.flippingbot.FlippingBot;
 import me.pedrogandra.flippingbot.module.AutoBazaar;
 import me.pedrogandra.flippingbot.utils.ChestManager;
 import me.pedrogandra.flippingbot.utils.IOManager;
@@ -26,7 +27,6 @@ public class OrderManager {
 	private IOManager io = new IOManager();
 	public Map<String, BazaarOrder> currentOrders = new HashMap<>();
 	private static double initialPurse;
-	private static double currentPurse;
 	
 	public void updateOrderInfo() throws Exception {
 		IndexedMap<String, BazaarItem> itemList = bz.getCurrentItems();
@@ -331,7 +331,7 @@ public class OrderManager {
 	private boolean createBuyOrder(BazaarOrder o, double investment, double highestBuy, double volumeMax) throws Exception {
 		investment -= (o.currentSellAmount+o.currentInventoryAmount);
 		//investment = Math.min(investment, volumeMax);
-		investment = Math.min(investment, currentPurse);
+		investment = Math.min(investment, FlippingBot.currentPurse);
 		int nItems = (int) Math.min(255, (investment/(highestBuy+1)));
 		if(nItems <= 0)
 			return false;
@@ -380,10 +380,6 @@ public class OrderManager {
 	
 	public static void setInitialPurse(double p) {
 		initialPurse = Math.min(p, 500000000);
-	}
-	
-	public static void setCurrentPurse(double p) {
-		currentPurse = p;
 	}
 	
 }

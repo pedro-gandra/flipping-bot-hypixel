@@ -30,6 +30,12 @@ public class HypixelApiClient {
         String endpoint = BASE_URL + "/skyblock/auctions?page=0";
         return makeRequest(endpoint, false).getAsJsonArray("auctions");
     }
+    
+    public String getPlayerName(String uuid) throws Exception {
+        String endpoint = BASE_URL + "/player?key=" + API_KEY + "&uuid=" + uuid;
+        JsonObject data = makeRequest(endpoint, true).getAsJsonObject("player");
+        return data.get("displayname").getAsString();
+    }
 
     private JsonObject makeRequest(String endpoint, boolean authRequired) throws Exception {
         URL url = new URL(endpoint);
@@ -47,7 +53,7 @@ public class HypixelApiClient {
             throw new RuntimeException("Erro ao acessar API Hypixel: Código " + responseCode);
         }
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
         StringBuilder response = new StringBuilder();
         String inputLine;
 
@@ -57,7 +63,7 @@ public class HypixelApiClient {
 
         in.close();
         connection.disconnect();
-
+        
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(response.toString());
         JsonObject json = element.getAsJsonObject();

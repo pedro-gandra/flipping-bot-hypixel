@@ -1077,7 +1077,7 @@ public class Minecraft implements IThreadListener, IPlayerUsage
     {
     	
     	//FlippingBot
-    	FlippingBot.instance.checkReset();
+    	//FlippingBot.instance.checkReset();
     	
         long i = System.nanoTime();
         this.mcProfiler.startSection("root");

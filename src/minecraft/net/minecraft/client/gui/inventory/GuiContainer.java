@@ -1,7 +1,13 @@
 package net.minecraft.client.gui.inventory;
 
 import com.google.common.collect.Sets;
+
+import me.pedrogandra.flippingbot.utils.ChestManager;
+import me.pedrogandra.flippingbot.utils.IOManager;
+import me.pedrogandra.flippingbot.utils.MCUtils;
+
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;

@@ -36,11 +36,12 @@ public class AuctionDataCache {
 	        boolean bin = obj.get("bin").getAsBoolean();
 	        if(!bin) continue;
 	        String name = obj.has("item_name") ? obj.get("item_name").getAsString() : "";
+	        String uuid = obj.has("auctioneer") ? obj.get("auctioneer").getAsString() : "";
 	        String rarity = obj.has("tier") ? obj.get("tier").getAsString() : "";
 	        float price = obj.has("starting_bid") ? obj.get("starting_bid").getAsFloat() : 0.0f;
 	        String base64 = obj.get("item_bytes").getAsString();
 	        ItemStack item = itemStackFromBase64(base64);
-            AuctionInfo info = new AuctionInfo(name, rarity, price, item);
+            AuctionInfo info = new AuctionInfo(name, uuid, rarity, price, item);
 	        itemList.add(info);
 	    }
 	}
