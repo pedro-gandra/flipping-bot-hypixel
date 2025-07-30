@@ -65,6 +65,7 @@ public class AutoBazaar extends Module {
 	}
 	
 	public void onEnable() {
+		/*
 		this.setToggled(true);
 		currentIndex = 0;
 		currentItems.clear();
@@ -81,17 +82,20 @@ public class AutoBazaar extends Module {
                 e.printStackTrace();
             }
         }).start();
+        */
 	}
 	
 	public void onDisable() {
+		/*
 		this.setToggled(false);
 		currentIndex = 0;
 		currentItems.clear();
 		om.currentOrders.clear();
+		*/
 	}
 	
 	public void onUpdate() {
-		
+		/*
 		if(this.isToggled()) {
 			
 			//navigate cards
@@ -107,7 +111,7 @@ public class AutoBazaar extends Module {
 			}
 			
 		}
-		
+		*/
 	}
 	
 	private void callApiBazaar() {

@@ -36,6 +36,7 @@ public class ChestManager {
 	public final int slotSellInventory = 47;
 	public final int slotConfirmSellInventory = 11;
 	
+	public final int slotItemBIN = 13;
 	public final int slotBuyBIN = 31;
 	public final int slotConfirmBIN = 11;
 	
@@ -141,6 +142,15 @@ public class ChestManager {
         if(itemInicial.getDisplayName() == novoItem.getDisplayName())
         	return false;
         return true;
+    }
+    
+    public void printTooltip(int slot) {
+    	ItemStack item = getItemInSlot(slot);
+    	if(item==null) return;
+    	for(String t : item.getTooltip(mc.thePlayer, false)) {
+    		t = t.replace("§", "&");
+    		IOManager.sendChat("TT: " + t);
+    	}
     }
     
     public void writeSign(final String s) throws Exception {

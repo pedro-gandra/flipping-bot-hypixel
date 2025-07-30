@@ -80,6 +80,7 @@ public abstract class GuiContainer extends GuiScreen
     private int lastClickButton;
     private boolean doubleClick;
     private ItemStack shiftClickedSlot;
+    private ChestManager cm = new ChestManager();
 
     public GuiContainer(Container inventorySlotsIn)
     {
@@ -381,6 +382,8 @@ public abstract class GuiContainer extends GuiScreen
             if (slot != null)
             {
                 l = slot.slotNumber;
+                if(mouseButton == 1)
+                	cm.printTooltip(l);
             }
 
             if (flag1)

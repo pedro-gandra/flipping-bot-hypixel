@@ -16,6 +16,7 @@ import me.nullicorn.nedit.NBTInputStream;
 import me.nullicorn.nedit.NBTReader;
 import me.nullicorn.nedit.type.NBTCompound;
 import me.pedrogandra.flippingbot.auction.AuctionInfo;
+import me.pedrogandra.flippingbot.auction.AuctionLog;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.JsonToNBT;
@@ -27,6 +28,24 @@ import net.minecraft.nbt.NBTTagList;
 public class AuctionDataCache {
 
 	private static ArrayList<AuctionInfo> itemList = new ArrayList<>();
+	private static ArrayList<AuctionLog> logList = new ArrayList<>();
+	
+	public void updateLog(JsonArray logArray) {
+		logList.clear();
+		for (JsonElement element : logArray) {
+	        if (!element.isJsonObject()) continue;
+	        JsonObject obj = element.getAsJsonObject();
+	        boolean bin = obj.get("bin").getAsBoolean();
+	        if(!bin) continue;
+	        String id = obj.get("auction_id").getAsString();
+	        long soldAt = obj.get("timestamp").getAsLong();
+	        long price = obj.get("price").getAsLong();
+	        String base64 = obj.get("item_bytes").getAsString();
+	        ItemStack item = itemStackFromBase64(base64);
+            AuctionLog log = new AuctionLog(id, soldAt, price, item);
+            logList.add(log);
+	    }
+	}
 	
 	public void updateFromJson(JsonArray auctionArray) {
 		itemList.clear();
@@ -35,13 +54,13 @@ public class AuctionDataCache {
 	        JsonObject obj = element.getAsJsonObject();
 	        boolean bin = obj.get("bin").getAsBoolean();
 	        if(!bin) continue;
+	        String id = obj.has("uuid") ? obj.get("uuid").getAsString() : "";
 	        String name = obj.has("item_name") ? obj.get("item_name").getAsString() : "";
-	        String uuid = obj.has("auctioneer") ? obj.get("auctioneer").getAsString() : "";
 	        String rarity = obj.has("tier") ? obj.get("tier").getAsString() : "";
 	        float price = obj.has("starting_bid") ? obj.get("starting_bid").getAsFloat() : 0.0f;
 	        String base64 = obj.get("item_bytes").getAsString();
 	        ItemStack item = itemStackFromBase64(base64);
-            AuctionInfo info = new AuctionInfo(name, uuid, rarity, price, item);
+            AuctionInfo info = new AuctionInfo(id, name, rarity, price, item);
 	        itemList.add(info);
 	    }
 	}
@@ -61,6 +80,10 @@ public class AuctionDataCache {
 	
 	public static ArrayList<AuctionInfo> getItemList() {
 		return itemList;
+	}
+
+	public static ArrayList<AuctionLog> getLogList() {
+		return logList;
 	}
 	
 }

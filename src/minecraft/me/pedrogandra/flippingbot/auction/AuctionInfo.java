@@ -6,15 +6,15 @@ import net.minecraft.item.ItemStack;
 
 public class AuctionInfo {
 	
+	private String id;
 	private String name;
-	private String uuidUser;
 	private String rarity;
 	private float price;
 	private ItemStack item;
 	
-	public AuctionInfo(String n, String u, String r, float price, ItemStack i) {
+	public AuctionInfo(String id, String n, String r, float price, ItemStack i) {
+		this.id = id;
 		this.name = n;
-		this.uuidUser = u;
 		this.rarity = r;
 		this.price = price;
 		this.item = i;
@@ -52,12 +52,12 @@ public class AuctionInfo {
 		this.item = item;
 	}
 
-	public String getUuidUser() {
-		return uuidUser;
+	public String getId() {
+		return id;
 	}
 
-	public void setUuidUser(String uuidUser) {
-		this.uuidUser = uuidUser;
+	public void setId(String id) {
+		this.id = id;
 	}
 	
 }

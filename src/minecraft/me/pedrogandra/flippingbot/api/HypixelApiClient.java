@@ -26,15 +26,23 @@ public class HypixelApiClient {
         return makeRequest(endpoint, true).getAsJsonArray("items");
     }
     
-    public JsonArray getAuctionData() throws Exception {
+    public JsonObject getAuctionData() throws Exception {
         String endpoint = BASE_URL + "/skyblock/auctions?page=0";
-        return makeRequest(endpoint, false).getAsJsonArray("auctions");
+        return makeRequest(endpoint, false).getAsJsonObject();
     }
     
     public String getPlayerName(String uuid) throws Exception {
         String endpoint = BASE_URL + "/player?key=" + API_KEY + "&uuid=" + uuid;
         JsonObject data = makeRequest(endpoint, true).getAsJsonObject("player");
         return data.get("displayname").getAsString();
+    }
+    
+    public JsonObject getAuctionEnded() throws Exception {
+    	String endpoint = BASE_URL + "/skyblock/auctions_ended";
+    	JsonObject res = makeRequest(endpoint, false).getAsJsonObject();
+    	if(res.get("success").getAsBoolean())
+    		return res;
+    	return null;
     }
 
     private JsonObject makeRequest(String endpoint, boolean authRequired) throws Exception {

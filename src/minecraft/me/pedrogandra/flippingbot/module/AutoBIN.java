@@ -18,6 +18,7 @@ import me.pedrogandra.flippingbot.api.HypixelApiClient;
 import me.pedrogandra.flippingbot.api.util.AuctionDataCache;
 import me.pedrogandra.flippingbot.auction.AuctionInfo;
 import me.pedrogandra.flippingbot.auction.AuctionItem;
+import me.pedrogandra.flippingbot.auction.ml.HistoryManager;
 import me.pedrogandra.flippingbot.bazaar.OrderManager;
 import me.pedrogandra.flippingbot.commands.tests.TestString;
 import me.pedrogandra.flippingbot.gui.GuiIngameHook;
@@ -44,6 +45,7 @@ public class AutoBIN extends Module {
 	private AuctionDataCache auctionData = new AuctionDataCache();
 	public static ArrayList<AuctionItem> itemList = new ArrayList();
 	public static int displayListStart = 0;
+	private long lastApiChange;
 	
 	private File configDir = new File(mc.mcDataDir, "config");
 	private File file = new File(configDir, "auction_items.json");
@@ -62,15 +64,19 @@ public class AutoBIN extends Module {
 	
 	public void onEnable() {
 		this.setToggled(true);
+		
+		/*
 		updateData = false;
 		isExecuting = true;
 		getCurrentPage();
+		*/
 	}
 	
 	
 	public void onDisable() {
 		this.setToggled(false);
-		currentAuctionPage.clear();
+		
+		//currentAuctionPage.clear();
 	}
 	
 	public void onUpdate() {
@@ -84,7 +90,7 @@ public class AutoBIN extends Module {
 		
 		/*if(mc.currentScreen instanceof GuiChest && !currentAuctionPage.isEmpty() && isExecuting == false) {
 			displayOnChest();
-		}*/
+		}
 		
 		if(this.isToggled() && !isExecuting) {
 			isExecuting = true;
@@ -95,7 +101,7 @@ public class AutoBIN extends Module {
 				updateData = true;
 				checkItems();
 			}
-		}
+		}*/
 	}
 	
 	private void checkItems(){
@@ -145,9 +151,8 @@ public class AutoBIN extends Module {
 										if(!(ttStr.contains(spec.toLowerCase()))) continue;
 									}
 								}
-								String playerName = api.getPlayerName(info.getUuidUser());
-								mc.thePlayer.sendChatMessage("/ah " + playerName);
-								Thread.sleep(1500);
+								mc.thePlayer.sendChatMessage("/viewauction " + info.getId());
+								Thread.sleep(1000);
 								buyItem(info, item);
 								Thread.sleep(1500);
 							}		
@@ -157,7 +162,6 @@ public class AutoBIN extends Module {
 					}
 				}
 				io.sendChat("Finished checking");
-				Thread.sleep(60000);
 				isExecuting = false;
 			} catch(Exception e) {
 				io.sendError("Unexpected error checking items: " + e.toString());
@@ -167,53 +171,49 @@ public class AutoBIN extends Module {
 	
 	private void buyItem(AuctionInfo info, AuctionItem alvo) throws Exception {
 		IInventory inv = cm.getChestInventory();
-		for(int i = 0; i < inv.getSizeInventory(); i++) {
-			ItemStack item = inv.getStackInSlot(i);
-			if(item == null || item.getDisplayName() == "") continue;
-			String name = mcu.cleanText(item.getDisplayName());
-			if(!(name.equals(info.getName()))) continue;
-			List<String> listTT = item.getTooltip(mc.thePlayer, false);
-			String tt = mcu.cleanText(listTT.toString());
-			int s = tt.indexOf("Buy it now:");
-			String temp = tt.substring(s);
-			int e = temp.indexOf("coins");
-			double price = Double.parseDouble(mcu.getNumber(temp.substring(0, e)));
-			if(price != info.getPrice()) continue;
-			List<String> infoTT = info.getItem().getTooltip(mc.thePlayer, false);
-			if(alvo.isExcludeRecomb()) {
-				String rarityInfo = listTT.get(listTT.size()-1);
-				if(mcu.cleanText(rarityInfo).contains("a")) continue;
-			}
-			if(!(alvo.getGearScore().isEmpty())) {
-				ArrayList<Integer> gs = alvo.getGearScore();
-				boolean found = false;
-				for(String t: listTT) {
-					t = mcu.cleanText(t);
-					if(t.contains("Gear Score:")) {
-						found = true;
-						int divisor = t.indexOf("(");
-						Double first = Double.parseDouble(mcu.getNumber(t.substring(0, divisor)));
-						Double second = Double.parseDouble(mcu.getNumber(t.substring(divisor)));
-						if(first < gs.get(0) || second < gs.get(1)) {
-							found = false;
-							break;
-						}
+		ItemStack item = inv.getStackInSlot(cm.slotItemBIN);
+		if(item == null) return;
+		String name = mcu.cleanText(item.getDisplayName());
+		if(!(name.equals(info.getName()))) return;
+		List<String> listTT = item.getTooltip(mc.thePlayer, false);
+		String tt = mcu.cleanText(listTT.toString());
+		int s = tt.indexOf("Buy it now:");
+		String temp = tt.substring(s);
+		int e = temp.indexOf("coins");
+		double price = Double.parseDouble(mcu.getNumber(temp.substring(0, e)));
+		if(price != info.getPrice()) return;
+		List<String> infoTT = info.getItem().getTooltip(mc.thePlayer, false);
+		if(alvo.isExcludeRecomb()) {
+			String rarityInfo = listTT.get(listTT.size()-1);
+			if(mcu.cleanText(rarityInfo).contains("a")) return;
+		}
+		if(!(alvo.getGearScore().isEmpty())) {
+			ArrayList<Integer> gs = alvo.getGearScore();
+			boolean found = false;
+			for(String t: listTT) {
+				t = mcu.cleanText(t);
+				if(t.contains("Gear Score:")) {
+					found = true;
+					int divisor = t.indexOf("(");
+					Double first = Double.parseDouble(mcu.getNumber(t.substring(0, divisor)));
+					Double second = Double.parseDouble(mcu.getNumber(t.substring(divisor)));
+					if(first < gs.get(0) || second < gs.get(1)) {
+						found = false;
+						break;
 					}
 				}
-				if(!found) continue;
 			}
-			if(!(alvo.getSpecs().isEmpty())) {
-				tt = tt.toLowerCase();
-				for(String spec : alvo.getSpecs()) {
-					if(!(tt.contains(spec.toLowerCase()))) continue;
-				}
-			}
-			cm.clickSlot(i, 0, 0, true);
-			Thread.sleep(500);
-			cm.clickSlot(cm.slotBuyBIN, 0, 0, true);
-			Thread.sleep(500);
-			cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
+			if(!found) return;
 		}
+		if(!(alvo.getSpecs().isEmpty())) {
+			tt = tt.toLowerCase();
+			for(String spec : alvo.getSpecs()) {
+				if(!(tt.contains(spec.toLowerCase()))) return;
+			}
+		}
+		cm.clickSlot(cm.slotBuyBIN, 0, 0, true);
+		Thread.sleep(500);
+		cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
 	}
 	
 	private void displayOnChest() {
@@ -228,14 +228,23 @@ public class AutoBIN extends Module {
 	private void getCurrentPage() {
 		new Thread(() -> {			
 			try {
-				currentAuctionPage.clear();
-				JsonArray json = api.getAuctionData();
-				auctionData.updateFromJson(json);
-				this.currentAuctionPage = auctionData.getItemList();
-				io.sendChat("Items fetched");
+				long timeUpdate = this.lastApiChange;
+				while (timeUpdate == lastApiChange) {
+					currentAuctionPage.clear();
+					JsonObject res = api.getAuctionData();
+					timeUpdate = res.get("lastUpdated").getAsLong();
+					if(timeUpdate == lastApiChange) continue;
+					JsonArray json = res.getAsJsonArray("auctions");
+					auctionData.updateFromJson(json);
+					this.currentAuctionPage = auctionData.getItemList();
+					io.sendChat("Items fetched");
+				}
+				this.lastApiChange = timeUpdate;
 				isExecuting = false;
 			} catch(Exception e) {
 				io.sendError("Error getting auction latest info: " + e.toString());
+				isExecuting = false;
+				updateData = true;
 			}	
 		}).start();
 	}
