@@ -1,8 +1,14 @@
 package me.pedrogandra.flippingbot.auction.ml.utils;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import me.pedrogandra.flippingbot.auction.AuctionLog;
+import me.pedrogandra.flippingbot.auction.ml.categories.ArmorData;
 import me.pedrogandra.flippingbot.auction.ml.categories.ItemData;
 import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
 import me.pedrogandra.flippingbot.utils.MCUtils;
@@ -25,8 +31,9 @@ public class ItemParser {
 			rest = itemName.substring(rest.indexOf("]")+1);
 		
 		List<String> tt = item.getTooltip(mc.thePlayer, false);
+		int lastLine = gp.lastLineTT(tt);
 		String name = rest.replaceAll("[^a-zA-Z ]", "").trim().toLowerCase();
-		int rarity = gp.rarity(tt.get(tt.size()-1), 0);
+		int rarity = gp.rarity(tt.get(lastLine), 0);
 		int lvl = Integer.parseInt(mcu.getNumber(levelString));
 		int petCandy = 0;
 		String petItem = "none";
@@ -65,6 +72,107 @@ public class ItemParser {
 		
 		return new ItemData(name, rarity, log.getSoldAt(), log.getSellPrice());
 		
+	}
+	
+	public ArmorData getAsArmor(AuctionLog log) {
+		String reforge = "none";
+		int dungeonStars = -1;
+		int masterStars = -1;
+		int hpb = 0;
+		boolean aop = false;
+		double averageGem = 0;
+		String dye = "none";
+		String skin = "none";
+		ArmorData piece;
+		
+		try {
+		
+			ItemStack item = log.getItem();
+			String displayName = item.getDisplayName();
+			String nameWReforge = mcu.cleanText(item.getDisplayName()).replaceAll("[^a-zA-Z ]", "").toLowerCase().replace("shiny", "").trim();
+			
+			List<String> tt = item.getTooltip(mc.thePlayer, false);
+			String finalTT = tt.get(tt.size()-1);
+			boolean reforged = false;
+			for(String t : tt) {
+				if(t.contains("§9("))
+					reforged = true;
+				if(t.contains("Defense:") && t.contains(("§e(")))
+					hpb = gp.hpbAmount(t.substring(t.indexOf("§e(")+3));
+				if(t.contains("Health:") && t.contains("§c["))
+					aop = true;
+				if(t.contains("[") && mcu.cleanText(t).replaceAll("[^a-zA-Z]", "").length() == 0)
+					averageGem = gp.averageGem(t);
+				if(t.contains("Dyed") && mcu.cleanText(t).replace("Dyed", "").length() > 0)
+					dye = mcu.cleanText(t).replaceAll("[^a-zA-Z ]", "").replace("Dyed", "").toLowerCase().trim();
+				if(t.contains("Skin") && t.contains("§8"))
+					skin = mcu.cleanText(t).replace("Skin", "").trim();
+			}
+			
+			if(finalTT.contains("DUNGEON")) {
+				dungeonStars = gp.dungeonStars(displayName);
+				masterStars = gp.masterStars(displayName);
+			}
+			
+			String name;
+			if(reforged) {
+				String[] split = nameWReforge.split(" ");
+				ArrayList<String> splitList = new ArrayList();
+				for(String s : split) {
+					splitList.add(s);
+				}
+				reforge = splitList.get(0);
+				splitList.remove(0);
+				name = String.join(" ", splitList);
+			} else
+				name = nameWReforge;
+				
+			int rarity = gp.rarity(finalTT, 0);
+			
+			piece = new ArmorData(name, rarity, log.getSoldAt(), log.getSellPrice(), reforge, dungeonStars, masterStars, hpb, aop, averageGem, dye, skin);
+			Map<String, Integer> encMap = piece.getEnchantments();
+			String ttStr = tt.toString().toLowerCase();
+			for(Entry<String, Integer> entry : encMap.entrySet()) {
+				int index;
+				String tempStr = new String(ttStr);
+				String key = entry.getKey();
+				do {
+					index = tempStr.indexOf(key);
+					if(index != -1) {
+						String analyze = tempStr.substring(index-2);
+						analyze = analyze.substring(0, analyze.indexOf(","));
+						if(analyze.charAt(0) == '§' && (analyze.charAt(1) == 'l' || analyze.charAt(1) == '9')) {
+							analyze = mcu.cleanText(analyze).replace(key, "").trim();
+							int value = gp.romanToInt(analyze);
+							encMap.replace(key, value);
+							break;
+						}
+						tempStr = tempStr.substring(index+1);
+					}
+				} while(index != -1);
+			}
+		
+		} catch(Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+		return piece;
+	}
+	
+	public AuctionLog itemToLog(ItemStack item) {
+		String id = "test";
+		long soldAt = System.currentTimeMillis();
+		long price = -1;
+		List<String> tt = item.getTooltip(mc.thePlayer, false);
+		boolean remove = false;
+		int i = 0;
+		for (String t : tt) {
+		    if (t.contains("Buy it now:")) {
+		        price = Long.parseLong(mcu.getNumber(mcu.cleanText(t)));
+		    }
+		}
+		return new AuctionLog(id, soldAt, price, item);
 	}
 	
 }

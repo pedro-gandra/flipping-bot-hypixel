@@ -27,7 +27,7 @@ import net.minecraft.nbt.NBTTagList;
 
 public class AuctionDataCache {
 
-	private static ArrayList<AuctionInfo> itemList = new ArrayList<>();
+	private static ArrayList<AuctionLog> itemList = new ArrayList<>();
 	private static ArrayList<AuctionLog> logList = new ArrayList<>();
 	
 	public void updateLog(JsonArray logArray) {
@@ -55,12 +55,11 @@ public class AuctionDataCache {
 	        boolean bin = obj.get("bin").getAsBoolean();
 	        if(!bin) continue;
 	        String id = obj.has("uuid") ? obj.get("uuid").getAsString() : "";
-	        String name = obj.has("item_name") ? obj.get("item_name").getAsString() : "";
-	        String rarity = obj.has("tier") ? obj.get("tier").getAsString() : "";
-	        float price = obj.has("starting_bid") ? obj.get("starting_bid").getAsFloat() : 0.0f;
+	        long price = obj.has("starting_bid") ? obj.get("starting_bid").getAsLong() : 0;
 	        String base64 = obj.get("item_bytes").getAsString();
 	        ItemStack item = itemStackFromBase64(base64);
-            AuctionInfo info = new AuctionInfo(id, name, rarity, price, item);
+	        long now = System.currentTimeMillis();
+            AuctionLog info = new AuctionLog(id, now, price, item);
 	        itemList.add(info);
 	    }
 	}
@@ -78,7 +77,7 @@ public class AuctionDataCache {
     }
 
 	
-	public static ArrayList<AuctionInfo> getItemList() {
+	public static ArrayList<AuctionLog> getItemList() {
 		return itemList;
 	}
 

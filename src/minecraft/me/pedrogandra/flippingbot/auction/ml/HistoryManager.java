@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import me.pedrogandra.flippingbot.api.HypixelApiClient;
 import me.pedrogandra.flippingbot.api.util.AuctionDataCache;
 import me.pedrogandra.flippingbot.auction.AuctionLog;
+import me.pedrogandra.flippingbot.auction.ml.categories.ArmorData;
 import me.pedrogandra.flippingbot.auction.ml.categories.ItemData;
 import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
 import me.pedrogandra.flippingbot.auction.ml.utils.CsvExporter;
@@ -29,10 +30,12 @@ public class HistoryManager {
 	private MCUtils mcu = new MCUtils();
 	private ItemParser ip = new ItemParser();
 	private CsvExporter csv = new CsvExporter();
+	private LogCache log = new LogCache();
 	private static final String DATA_FOLDER = "C:/Dev/minecraft/BazaarBot/data-files/";
 	
 	private static List<PetData> petList = new ArrayList<>();
 	private static List<ItemData> regularItemList = new ArrayList<>();
+	private static List<ArmorData> armorList = new ArrayList<>();
 	private static List<AuctionLog> currentLogPage = new ArrayList<>();
 	private static long lastHistoryUpdate = 0;
 	private static boolean running = false;
@@ -40,6 +43,7 @@ public class HistoryManager {
 	public void updateHistory() {
 		new Thread(() -> {
 			
+			int cleanCount = 20;
 			while(running) {
 				
 				try {
@@ -58,6 +62,13 @@ public class HistoryManager {
 						currentLogPage = auctionData.getLogList();
 						processItems();
 						System.out.println("Items processados");
+						if(cleanCount >= 20) {
+							Thread.sleep(10000);
+							cleanFiles();
+							System.out.println("Arquivos limpos");
+							cleanCount = 0;
+						} else
+							cleanCount++;
 					}
 					this.lastHistoryUpdate = timeUpdate;
 					Thread.sleep(20000);
@@ -78,13 +89,18 @@ public class HistoryManager {
 				petList.add(ip.getAsPet(log));
 			} else if(category.equals("REGULAR")) {
 				regularItemList.add(ip.getAsRegularItem(log));
+			} else if(category.equals("ARMOR")) {
+				ArmorData item = ip.getAsArmor(log);
+				if(item!=null)
+					armorList.add(item);
 			}
 		}
-		csv.petToCsv(petList, DATA_FOLDER+"pet.csv");
+		csv.petToCsv(petList, DATA_FOLDER+"pet.csv", true);
 		csv.regularItemToCsv(regularItemList, DATA_FOLDER+"regular.csv");
+		csv.armorToCsv(armorList, DATA_FOLDER+"armor.csv");
 	}
 	
-	private String classifyItem(ItemStack item) {
+	public String classifyItem(ItemStack item) {
 		if(item.stackSize != 1) return "";
 		String name = mcu.cleanText(item.getDisplayName());
 		List<String> tt = item.getTooltip(mc.thePlayer, false);
@@ -97,13 +113,21 @@ public class HistoryManager {
 		
 		if(desc.contains("ACCESSORY") || desc.contains("PET ITEM") || desc.contains("COSMETIC"))
 			return "REGULAR";
+		
+		if(desc.contains("CHESTPLATE") || desc.contains("HELMET") || desc.contains("LEGGINGS") || desc.contains("BOOTS"))
+			return "ARMOR";
 			
 		return "";
+	}
+	
+	private void cleanFiles() {
+		log.cleanPetFile();
 	}
 	
 	private void clearLists() {
 		petList.clear();
 		regularItemList.clear();
+		armorList.clear();
 	}
 
 	public static boolean isRunning() {
