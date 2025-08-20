@@ -39,6 +39,14 @@ public class ChestManager {
 	public final int slotItemBIN = 13;
 	public final int slotBuyBIN = 31;
 	public final int slotConfirmBIN = 11;
+	public final int slotClaimItems = 21;
+	public final int slotManageBIN = 13;
+	public final int slotCollectBIN = 15;
+	
+	public final int slotBINDuration = 33;
+	public final int slot24Hours = 13;
+	public final int slotBINPrice = 31;
+	public final int slotBINCreate = 29;
 	
     private final Minecraft mc = Minecraft.getMinecraft();
     private final MCUtils mcu = new MCUtils();
@@ -133,7 +141,7 @@ public class ChestManager {
     		trueSlot += getChestInventory().getSizeInventory()-9;
     	}
         mc.playerController.windowClick(mc.thePlayer.openContainer.windowId, trueSlot, mouseButton, mode, mc.thePlayer);
-        Thread.sleep(800);
+        Thread.sleep(1000);
         if(!(mc.currentScreen instanceof GuiChest))
         	return true;
         ItemStack novoItem = getItemInSlot(slotId);
@@ -153,6 +161,24 @@ public class ChestManager {
     	}
     }
     
+    public boolean equalItems(ItemStack i1, ItemStack i2) {
+    	if(i1 == null || i2 == null)
+    		return false;
+    	List<String> tt1 = i1.getTooltip(mc.thePlayer, false);
+    	List<String> tt2 = i2.getTooltip(mc.thePlayer, false);
+    	int count = 0;
+    	for(int i = 0; i < tt1.size(); i++) {
+    		if(tt1.get(i).equals(tt2.get(i))) {
+    			count++;
+    		}
+    		if(count == 6 && i == 5)
+    			return true;
+    		if(i>=5)
+    			return false;
+    	}
+    	return false;
+    }
+    
     public void writeSign(final String s) throws Exception {
     	if(!(mc.currentScreen instanceof GuiEditSign)) return;
         final GuiEditSign gui = (GuiEditSign) mc.currentScreen;
@@ -163,7 +189,7 @@ public class ChestManager {
             Thread.sleep(50);
         }
         MCUtils.clickButton("done");
-        Thread.sleep(800);
+        Thread.sleep(1000);
     }
     
     private int getKeyCodeForChar(char c) {

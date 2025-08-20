@@ -1,5 +1,7 @@
 package me.pedrogandra.flippingbot.auction.ml.categories;
 
+import java.util.Objects;
+
 public class PetData extends ItemData {
 	
 	private int level;
@@ -57,5 +59,30 @@ public class PetData extends ItemData {
 		this.skin = skin;
 	}
 
+	public boolean isEquivalent(PetData pet) {
+		if (this.getName().equals(pet.getName()) && this.getRarity() == pet.getRarity() && this.skin.equals(pet.getSkin())) {
+			int lvlDiff = Math.abs(this.level - pet.getLevel());
+			if(lvlDiff == 0 || (this.level < 30 && pet.getLevel() < 30) || (this.level < 50 && lvlDiff <= 12) || (this.level < 70 && lvlDiff <= 8) || (this.level < 80 && lvlDiff <= 5) || (this.level < 90 && lvlDiff <= 3) || (this.level < 100 && lvlDiff <= 2)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+	    if (!(obj instanceof PetData)) return false;
+	    PetData pet = (PetData) obj;
+
+	    return this.getName().equals(pet.getName()) &&
+	           this.getRarity() == pet.getRarity() &&
+	           this.skin.equals(pet.getSkin()) &&
+	           this.level == pet.level;
+	}
+	
+	@Override
+	public int hashCode() {
+	    return Objects.hash(getName(), getRarity(), skin, level);
+	}
 	
 }

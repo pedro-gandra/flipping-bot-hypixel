@@ -3,7 +3,10 @@ package me.pedrogandra.flippingbot.module;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.lang.reflect.Type;
 
 import org.lwjgl.input.Keyboard;
@@ -16,14 +19,20 @@ import com.google.gson.reflect.TypeToken;
 import me.pedrogandra.flippingbot.FlippingBot;
 import me.pedrogandra.flippingbot.api.HypixelApiClient;
 import me.pedrogandra.flippingbot.api.util.AuctionDataCache;
+import me.pedrogandra.flippingbot.auction.AuctionFlip;
 import me.pedrogandra.flippingbot.auction.AuctionInfo;
 import me.pedrogandra.flippingbot.auction.AuctionItem;
+import me.pedrogandra.flippingbot.auction.AuctionLog;
 import me.pedrogandra.flippingbot.auction.ml.HistoryManager;
+import me.pedrogandra.flippingbot.auction.ml.PricePredictor;
+import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
+import me.pedrogandra.flippingbot.auction.ml.utils.ItemParser;
 import me.pedrogandra.flippingbot.bazaar.OrderManager;
 import me.pedrogandra.flippingbot.commands.tests.TestString;
 import me.pedrogandra.flippingbot.gui.GuiIngameHook;
 import me.pedrogandra.flippingbot.utils.ChestManager;
 import me.pedrogandra.flippingbot.utils.IOManager;
+import me.pedrogandra.flippingbot.utils.IndexedMap;
 import me.pedrogandra.flippingbot.utils.KeyboardManager;
 import me.pedrogandra.flippingbot.utils.MCUtils;
 import me.pedrogandra.flippingbot.utils.ResetManager;
@@ -41,7 +50,10 @@ public class AutoBIN extends Module {
 	private ResetManager rm = new ResetManager();
 	private MCUtils mcu = new MCUtils();
 	private Minecraft mc = Minecraft.getMinecraft();
-	private ArrayList<AuctionInfo> currentAuctionPage = new ArrayList();
+	private HistoryManager hm = new HistoryManager();
+	private ItemParser ip = new ItemParser();
+	private PricePredictor pp = new PricePredictor();
+	private ArrayList<AuctionLog> currentAuctionPage = new ArrayList();
 	private AuctionDataCache auctionData = new AuctionDataCache();
 	public static ArrayList<AuctionItem> itemList = new ArrayList();
 	public static int displayListStart = 0;
@@ -54,6 +66,9 @@ public class AutoBIN extends Module {
     
     private boolean updateData;
     private boolean isExecuting;
+    
+    public static double minPercentageProfit = 15;
+    public static double minProfit = 500000;
 	
 	public AutoBIN() {
 		super("AutoBIN", Keyboard.KEY_G);
@@ -75,8 +90,7 @@ public class AutoBIN extends Module {
 	
 	public void onDisable() {
 		this.setToggled(false);
-		
-		//currentAuctionPage.clear();
+		currentAuctionPage.clear();
 	}
 	
 	public void onUpdate() {
@@ -88,10 +102,6 @@ public class AutoBIN extends Module {
 			}
 		}
 		
-		/*if(mc.currentScreen instanceof GuiChest && !currentAuctionPage.isEmpty() && isExecuting == false) {
-			displayOnChest();
-		}
-		
 		if(this.isToggled() && !isExecuting) {
 			isExecuting = true;
 			if(updateData) {
@@ -101,128 +111,123 @@ public class AutoBIN extends Module {
 				updateData = true;
 				checkItems();
 			}
-		}*/
+		}
 	}
 	
-	private void checkItems(){
-		new Thread(()-> {
+	private void checkItems() {
+		
+		new Thread(() -> {
+			
 			try {
-				for(AuctionInfo info : currentAuctionPage) {
-					for(AuctionItem item : itemList) {
-						try {
-							if(info.getName().toLowerCase().contains(item.getName().toLowerCase()) && info.getRarity().equalsIgnoreCase(item.getRarity()) && info.getPrice() <= item.getPrice() && info.getPrice() <= FlippingBot.currentPurse) {
-								ItemStack stack = info.getItem();
-								List<String> tt = stack.getTooltip(mc.thePlayer, false);
-								int ttSize = tt.size();
-								if(item.isExcludeRecomb()) {
-									String rarityInfo = tt.get(ttSize-1);
-									if(mcu.cleanText(rarityInfo).contains("a")) continue;
-								}
-								if(item.getLevel() > 0) {
-									int level = 0;
-									int start = info.getName().indexOf("[");
-									int end = info.getName().indexOf("]");
-									if(start < 0 || end < 0) continue;
-									String lvlString = mcu.getNumber(info.getName().substring(start+1, end));
-									level = Integer.parseInt(lvlString);
-									if(level < item.getLevel()) continue;
-								}
-								if(!(item.getGearScore().isEmpty())) {
-									ArrayList<Integer> gs = item.getGearScore();
-									boolean found = false;
-									for(String t: tt) {
-										t = mcu.cleanText(t);
-										if(t.contains("Gear Score:")) {
-											found = true;
-											int divisor = t.indexOf("(");
-											Double first = Double.parseDouble(mcu.getNumber(t.substring(0, divisor)));
-											Double second = Double.parseDouble(mcu.getNumber(t.substring(divisor)));
-											if(first < gs.get(0) || second < gs.get(1)) {
-												found = false;
-												break;
-											}
-										}
-									}
-									if(!found) continue;
-								}
-								if(!(item.getSpecs().isEmpty())) {
-									String ttStr = mcu.cleanText(tt.toString()).toLowerCase();
-									for(String spec : item.getSpecs()) {
-										if(!(ttStr.contains(spec.toLowerCase()))) continue;
-									}
-								}
-								mc.thePlayer.sendChatMessage("/viewauction " + info.getId());
-								Thread.sleep(1000);
-								buyItem(info, item);
-								Thread.sleep(1500);
-							}		
-						} catch(Exception e) {
-							io.sendError("Error when checking this item: "+ info.getName() + " - " + e.toString());
+				
+				List<AuctionFlip> buyList = new ArrayList<>();
+				for(AuctionLog entry : currentAuctionPage) {
+					try {
+						long sellPrice = entry.getSellPrice();
+						if(sellPrice > FlippingBot.currentPurse * 0.5) continue;
+						String type = hm.classifyItem(entry.getItem());
+						if(type.equals("")) continue;
+						long value = 0;
+						if(type.equals("PET")) {
+							PetData pet = ip.getAsPet(entry);
+							value = (long) pp.pricePet(pet);
+							value = roundPrice(value);
 						}
+						long profit = value - sellPrice;
+						if(profit > minProfit && (double) profit/sellPrice > minPercentageProfit/100) {
+							buyList.add(new AuctionFlip(entry.getId(), profit, value));
+						}
+					} catch(Exception e) {
+						io.sendChat("Error analysing an item: " + e.toString());
 					}
 				}
-				io.sendChat("Finished checking");
+				if(!buyList.isEmpty()) {
+					buyList.sort((a, b) -> Long.compare(b.getProfit(), a.getProfit()));
+					buyItems(buyList);
+				}
+				collectCoins();
 				isExecuting = false;
+				
 			} catch(Exception e) {
-				io.sendError("Unexpected error checking items: " + e.toString());
+				io.sendChat("General error when checking items: " + e.toString());
+				isExecuting = false;
 			}
+			
 		}).start();
 	}
 	
-	private void buyItem(AuctionInfo info, AuctionItem alvo) throws Exception {
-		IInventory inv = cm.getChestInventory();
-		ItemStack item = inv.getStackInSlot(cm.slotItemBIN);
-		if(item == null) return;
-		String name = mcu.cleanText(item.getDisplayName());
-		if(!(name.equals(info.getName()))) return;
-		List<String> listTT = item.getTooltip(mc.thePlayer, false);
-		String tt = mcu.cleanText(listTT.toString());
-		int s = tt.indexOf("Buy it now:");
-		String temp = tt.substring(s);
-		int e = temp.indexOf("coins");
-		double price = Double.parseDouble(mcu.getNumber(temp.substring(0, e)));
-		if(price != info.getPrice()) return;
-		List<String> infoTT = info.getItem().getTooltip(mc.thePlayer, false);
-		if(alvo.isExcludeRecomb()) {
-			String rarityInfo = listTT.get(listTT.size()-1);
-			if(mcu.cleanText(rarityInfo).contains("a")) return;
+	private void collectCoins() throws Exception {
+		Thread.sleep(1000);
+		mc.thePlayer.sendChatMessage("/ah");
+		if(cm.getItemInSlot(cm.slotCollectBIN).getTooltip(mc.thePlayer, false).toString().contains("Your auctions have")) {
+			cm.clickSlot(cm.slotCollectBIN, 0, 0, true);
+			if(cm.getItemInSlot(cm.slotClaimItems).getDisplayName().contains("Claim All"))
+				cm.clickSlot(cm.slotClaimItems, 0, 0, true);
+			else {
+				cm.clickSlot(10, 0, 0, true);
+				cm.clickSlot(cm.slotBuyBIN , 0, 0, true);
+			}
 		}
-		if(!(alvo.getGearScore().isEmpty())) {
-			ArrayList<Integer> gs = alvo.getGearScore();
-			boolean found = false;
-			for(String t: listTT) {
-				t = mcu.cleanText(t);
-				if(t.contains("Gear Score:")) {
-					found = true;
-					int divisor = t.indexOf("(");
-					Double first = Double.parseDouble(mcu.getNumber(t.substring(0, divisor)));
-					Double second = Double.parseDouble(mcu.getNumber(t.substring(divisor)));
-					if(first < gs.get(0) || second < gs.get(1)) {
-						found = false;
+	}
+	
+	private void buyItems(List<AuctionFlip> buyList) {
+		for(AuctionFlip f : buyList) {
+			try {
+				
+				mc.thePlayer.sendChatMessage("/viewauction " + f.getId());
+				Thread.sleep(800);
+				cm.clickSlot(cm.slotBuyBIN, 0, 0, true);
+				f.setItem(cm.getItemInSlot(13));
+				cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
+				Thread.sleep(1500);
+				
+			} catch(Exception e) {
+				io.sendChat("Error when buying item: " + e.toString());
+			}
+		}
+		
+		sellItems(buyList);
+	}
+	
+	private void sellItems(List<AuctionFlip> buyList) {
+		try {
+			
+			mc.thePlayer.sendChatMessage("/ah");
+			Thread.sleep(1000);
+			if(cm.getItemInSlot(cm.slotManageBIN).getTooltip(mc.thePlayer, false).toString().contains("You don't have any outstading bids")) return;
+			cm.clickSlot(cm.slotManageBIN, 0, 0, true);
+			if(cm.getItemInSlot(cm.slotClaimItems).getDisplayName().contains("Claim All"))
+				cm.clickSlot(cm.slotClaimItems, 0, 0, true);
+			else {
+				cm.clickSlot(10, 0, 0, true);
+				cm.clickSlot(cm.slotBuyBIN , 0, 0, true);
+			}
+			
+			IInventory inv = cm.getPlayerInventory();
+			for(int i  = 0; i < inv.getSizeInventory(); i++) {
+				ItemStack inSlot = cm.getItemInSlot(i);
+				if(inSlot == null) continue;
+				for(AuctionFlip f : buyList) {
+					if(cm.equalItems(inSlot, f.getItem())) {
+						Thread.sleep(1000);
+						mc.thePlayer.sendChatMessage("/ah");
+						Thread.sleep(1000);
+						cm.clickSlot(i, 0, 0, false);
+						cm.clickSlot(cm.slotBINDuration, 0, 0, true);
+						cm.clickSlot(cm.slot24Hours, 0, 0, true);
+						cm.clickSlot(cm.slotPrice, 0, 0, true);
+						cm.writeSign(Long.toString(f.getValue()));
+						cm.clickSlot(cm.slotBINCreate, 0, 0, true);
+						cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
 						break;
 					}
 				}
 			}
-			if(!found) return;
+				
+		} catch(Exception e) {
+			io.sendChat("Error selling items: " + e.toString());
 		}
-		if(!(alvo.getSpecs().isEmpty())) {
-			tt = tt.toLowerCase();
-			for(String spec : alvo.getSpecs()) {
-				if(!(tt.contains(spec.toLowerCase()))) return;
-			}
-		}
-		cm.clickSlot(cm.slotBuyBIN, 0, 0, true);
-		Thread.sleep(500);
-		cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
-	}
-	
-	private void displayOnChest() {
-		IInventory inv = cm.getChestInventory();
-		for(int i = 0; i < inv.getSizeInventory(); i++) {
-			AuctionInfo info = currentAuctionPage.get(i);
-			ItemStack item = info.getItem();
-			inv.setInventorySlotContents(i, item);
-		}
+		
 	}
 	
 	private void getCurrentPage() {
@@ -233,7 +238,10 @@ public class AutoBIN extends Module {
 					currentAuctionPage.clear();
 					JsonObject res = api.getAuctionData();
 					timeUpdate = res.get("lastUpdated").getAsLong();
-					if(timeUpdate == lastApiChange) continue;
+					if(res == null || timeUpdate == lastApiChange) {
+						Thread.sleep(2000);
+						continue;
+					}
 					JsonArray json = res.getAsJsonArray("auctions");
 					auctionData.updateFromJson(json);
 					this.currentAuctionPage = auctionData.getItemList();
@@ -272,6 +280,11 @@ public class AutoBIN extends Module {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    private long roundPrice(long value) {
+    	long base = (value / 100_000) * 100_000;
+        return base - 4;
     }
 	
 }

@@ -2,11 +2,19 @@ package net.minecraft.client.gui.inventory;
 
 import com.google.common.collect.Sets;
 
+import me.pedrogandra.flippingbot.auction.AuctionLog;
+import me.pedrogandra.flippingbot.auction.ml.HistoryManager;
+import me.pedrogandra.flippingbot.auction.ml.LogCache;
+import me.pedrogandra.flippingbot.auction.ml.PricePredictor;
+import me.pedrogandra.flippingbot.auction.ml.categories.ArmorData;
+import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
+import me.pedrogandra.flippingbot.auction.ml.utils.ItemParser;
 import me.pedrogandra.flippingbot.utils.ChestManager;
 import me.pedrogandra.flippingbot.utils.IOManager;
 import me.pedrogandra.flippingbot.utils.MCUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
@@ -382,8 +390,21 @@ public abstract class GuiContainer extends GuiScreen
             if (slot != null)
             {
                 l = slot.slotNumber;
-                if(mouseButton == 1)
-                	cm.printTooltip(l);
+                //FlippingBot
+                if(mouseButton == 1) {
+                	//cm.printTooltip(l);
+                	try {
+	                	ItemParser ip = new ItemParser();
+	                	PricePredictor pp = new PricePredictor();
+	                	ItemStack item = cm.getItemInSlot(l);
+	                	/*
+	                	PetData pet = ip.getAsPet(ip.itemToLog(item));
+	                	IOManager.sendChat("Value: " + pp.pricePet(pet));
+	                	*/
+                	} catch(Exception e) {
+                		IOManager.sendChat("Excecao clicando item: " + e.toString());
+                	}
+                }
             }
 
             if (flag1)
