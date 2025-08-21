@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.pedrogandra.flippingbot.FlippingBot;
 import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
 import me.pedrogandra.flippingbot.auction.ml.utils.CsvExporter;
 
@@ -15,7 +16,7 @@ public class LogCache {
 	private static CsvExporter csv = new CsvExporter();
 	
 	public static List<PetData> petList = new ArrayList<>();
-	private static final String dataPath = "C:\\Dev\\minecraft\\BazaarBot\\data-files\\";
+	private static final String dataPath = FlippingBot.DATA_FOLDER;
 	
 	public static void readPet() {
 		petList.clear();

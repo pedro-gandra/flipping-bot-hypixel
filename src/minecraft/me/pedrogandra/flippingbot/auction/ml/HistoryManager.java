@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import me.pedrogandra.flippingbot.FlippingBot;
 import me.pedrogandra.flippingbot.api.HypixelApiClient;
 import me.pedrogandra.flippingbot.api.util.AuctionDataCache;
 import me.pedrogandra.flippingbot.auction.AuctionLog;
@@ -31,7 +32,6 @@ public class HistoryManager {
 	private ItemParser ip = new ItemParser();
 	private CsvExporter csv = new CsvExporter();
 	private LogCache log = new LogCache();
-	private static final String DATA_FOLDER = "C:/Dev/minecraft/BazaarBot/data-files/";
 	
 	private static List<PetData> petList = new ArrayList<>();
 	private static List<ItemData> regularItemList = new ArrayList<>();
@@ -39,6 +39,7 @@ public class HistoryManager {
 	private static List<AuctionLog> currentLogPage = new ArrayList<>();
 	private static long lastHistoryUpdate = 0;
 	private static boolean running = false;
+	private String DATA_FOLDER = FlippingBot.DATA_FOLDER;
 	
 	public void updateHistory() {
 		new Thread(() -> {
