@@ -15,7 +15,6 @@ import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 
 import me.pedrogandra.flippingbot.FlippingBot;
-import me.pedrogandra.flippingbot.gui.GuiAuctionForm;
 import me.pedrogandra.flippingbot.gui.GuiIngameHook;
 import me.pedrogandra.flippingbot.utils.IOManager;
 
@@ -971,13 +970,7 @@ public class Minecraft implements IThreadListener, IPlayerUsage
      * Sets the argument GuiScreen as the main (topmost visible) screen.
      */
     public void displayGuiScreen(GuiScreen guiScreenIn)
-    {
-    	if(this.currentScreen instanceof GuiAuctionForm && guiScreenIn == null) {
-    		GuiAuctionForm screen = (GuiAuctionForm) this.currentScreen;
-    		if(screen.lockScreen == true)
-    			return;
-    	}
-    	
+    {	
         if (this.currentScreen != null)
         {
             this.currentScreen.onGuiClosed();

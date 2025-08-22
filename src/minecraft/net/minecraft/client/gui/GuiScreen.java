@@ -97,9 +97,7 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
         {
             ((GuiLabel)this.labelList.get(j)).drawLabel(this.mc, mouseX, mouseY);
         }
-        
-        if(this instanceof GuiChest)
-        	Minecraft.getMinecraft().ingameGUI.renderAuctionItems();
+       
     }
 
     /**

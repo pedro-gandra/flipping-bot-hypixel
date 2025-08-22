@@ -21,7 +21,6 @@ import me.pedrogandra.flippingbot.api.HypixelApiClient;
 import me.pedrogandra.flippingbot.api.util.AuctionDataCache;
 import me.pedrogandra.flippingbot.auction.AuctionFlip;
 import me.pedrogandra.flippingbot.auction.AuctionInfo;
-import me.pedrogandra.flippingbot.auction.AuctionItem;
 import me.pedrogandra.flippingbot.auction.AuctionLog;
 import me.pedrogandra.flippingbot.auction.ml.HistoryManager;
 import me.pedrogandra.flippingbot.auction.ml.PricePredictor;
@@ -55,14 +54,12 @@ public class AutoBIN extends Module {
 	private PricePredictor pp = new PricePredictor();
 	private ArrayList<AuctionLog> currentAuctionPage = new ArrayList();
 	private AuctionDataCache auctionData = new AuctionDataCache();
-	public static ArrayList<AuctionItem> itemList = new ArrayList();
 	public static int displayListStart = 0;
 	private long lastApiChange;
 	
 	private File configDir = new File(mc.mcDataDir, "config");
 	private File file = new File(configDir, "auction_items.json");
     private static final Gson gson = new Gson();
-    private final Type itemListType = new TypeToken<ArrayList<AuctionItem>>(){}.getType();
     
     private boolean updateData;
     private boolean isExecuting;
@@ -74,17 +71,13 @@ public class AutoBIN extends Module {
 		super("AutoBIN", Keyboard.KEY_G);
 		instance = this;
 		GuiIngameHook.bin = this;
-		loadItemList();
 	}
 	
 	public void onEnable() {
 		this.setToggled(true);
-		
-		/*
-		updateData = false;
-		isExecuting = true;
+		updateData = true;
+		isExecuting = false;
 		getCurrentPage();
-		*/
 	}
 	
 	
@@ -94,13 +87,6 @@ public class AutoBIN extends Module {
 	}
 	
 	public void onUpdate() {
-		if(mc.currentScreen instanceof GuiChest && itemList != null && !itemList.isEmpty()) {
-			if (KeyboardManager.isKeyJustPressed(Keyboard.KEY_RIGHT))
-				displayListStart = Math.min(displayListStart+6, itemList.size() - 1);		 
-			else if(KeyboardManager.isKeyJustPressed(Keyboard.KEY_LEFT)) {
-				displayListStart = Math.max(displayListStart-6, 0);
-			}
-		}
 		
 		if(this.isToggled() && !isExecuting) {
 			isExecuting = true;
@@ -112,6 +98,7 @@ public class AutoBIN extends Module {
 				checkItems();
 			}
 		}
+		
 	}
 	
 	private void checkItems() {
@@ -132,7 +119,7 @@ public class AutoBIN extends Module {
 							PetData pet = ip.getAsPet(entry);
 							value = (long) pp.pricePet(pet);
 							value = roundPrice(value);
-						}
+						} else continue;
 						long profit = value - sellPrice;
 						if(profit > minProfit && (double) profit/sellPrice > minPercentageProfit/100) {
 							buyList.add(new AuctionFlip(entry.getId(), profit, value));
@@ -219,6 +206,7 @@ public class AutoBIN extends Module {
 						cm.writeSign(Long.toString(f.getValue()));
 						cm.clickSlot(cm.slotBINCreate, 0, 0, true);
 						cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
+						buyList.remove(f);
 						break;
 					}
 				}
@@ -256,31 +244,6 @@ public class AutoBIN extends Module {
 			}	
 		}).start();
 	}
-	
-	public void saveItemList() {
-	    try {
-	        itemList.sort(Comparator.comparing(AuctionItem::getName, String.CASE_INSENSITIVE_ORDER));
-
-	        if (!configDir.exists()) {
-	            configDir.mkdirs();
-	        }
-
-	        try (Writer writer = new FileWriter(file)) {
-	            gson.toJson(itemList, writer);
-	        }
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    }
-	}
-
-    private void loadItemList() {
-        if (!file.exists()) return;
-        try (Reader reader = new FileReader(file)) {
-            itemList = gson.fromJson(reader, itemListType);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     
     private long roundPrice(long value) {
     	long base = (value / 100_000) * 100_000;

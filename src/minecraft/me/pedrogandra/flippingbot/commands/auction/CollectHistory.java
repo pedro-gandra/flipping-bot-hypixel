@@ -5,7 +5,6 @@ import java.util.Set;
 
 import me.pedrogandra.flippingbot.auction.ml.HistoryManager;
 import me.pedrogandra.flippingbot.commands.Command;
-import me.pedrogandra.flippingbot.gui.GuiAuctionForm;
 import me.pedrogandra.flippingbot.module.AutoBIN;
 import me.pedrogandra.flippingbot.utils.IOManager;
 import net.minecraft.client.Minecraft;
