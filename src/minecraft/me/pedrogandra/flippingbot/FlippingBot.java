@@ -25,8 +25,8 @@ public class FlippingBot {
 	private final Minecraft mc = Minecraft.getMinecraft();
 	private ResetManager rm = new ResetManager();
 	public static double currentPurse;
-	//public static final String DATA_FOLDER = "C:/Dev/minecraft/BazaarBot/data-files/";
-	public static final String DATA_FOLDER = "/home/pedro/dev/minecraft/flipping-bot-hypixel/data-files/";
+	public static final String DATA_FOLDER = "C:/Dev/minecraft/BazaarBot/data-files/";
+	//public static final String DATA_FOLDER = "/home/pedro/dev/minecraft/flipping-bot-hypixel/data-files/";
 	
 	public static void startClient() {
 		moduleManager = new ModuleManager();

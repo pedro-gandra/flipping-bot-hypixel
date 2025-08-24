@@ -20,15 +20,15 @@ public class PricePredictor {
 				break;
 		}
 		
-		if(nPets < 3)
+		if(nPets < 7)
 			return -1;
 		
 		relevantPets.sort((a, b) -> Long.compare(b.getSellPrice(), a.getSellPrice()));
 		int start = 0, end = nPets;
-		if(nPets >= 8) {
+		if(nPets == 10) {
 			start += 2;
 			end -= 2;
-		} else if(nPets>=5) {
+		} else {
 			start += 1;
 			end -= 1;
 		}

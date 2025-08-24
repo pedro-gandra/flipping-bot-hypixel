@@ -44,7 +44,7 @@ public class ChestManager {
 	public final int slotCollectBIN = 15;
 	
 	public final int slotBINDuration = 33;
-	public final int slot24Hours = 13;
+	public final int slot2Days = 14;
 	public final int slotBINPrice = 31;
 	public final int slotBINCreate = 29;
 	
@@ -164,10 +164,14 @@ public class ChestManager {
     public boolean equalItems(ItemStack i1, ItemStack i2) {
     	if(i1 == null || i2 == null)
     		return false;
+    	System.out.println("[DEBUG] Comparing: " + i1.getDisplayName() + " | | | " + i2.getDisplayName());
+    	if(!(i1.getDisplayName().equals(i2.getDisplayName()))) return false;
+    	IOManager.sendChat("[DEBUG] test2");
     	List<String> tt1 = i1.getTooltip(mc.thePlayer, false);
     	List<String> tt2 = i2.getTooltip(mc.thePlayer, false);
     	int count = 0;
-    	for(int i = 0; i < tt1.size(); i++) {
+    	for(int i = 0; i < tt1.size() && i < tt2.size(); i++) {
+    		System.out.println("[DEBUG] Comparing TT: " + tt1.get(i) + " | | | " + tt2.get(i));
     		if(tt1.get(i).equals(tt2.get(i))) {
     			count++;
     		}

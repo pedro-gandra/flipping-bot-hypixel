@@ -4,10 +4,13 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.lang.reflect.Type;
+import java.text.DecimalFormat;
 
 import org.lwjgl.input.Keyboard;
 
@@ -22,6 +25,7 @@ import me.pedrogandra.flippingbot.api.util.AuctionDataCache;
 import me.pedrogandra.flippingbot.auction.AuctionFlip;
 import me.pedrogandra.flippingbot.auction.AuctionInfo;
 import me.pedrogandra.flippingbot.auction.AuctionLog;
+import me.pedrogandra.flippingbot.auction.AuctionPreferences;
 import me.pedrogandra.flippingbot.auction.ml.HistoryManager;
 import me.pedrogandra.flippingbot.auction.ml.PricePredictor;
 import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
@@ -52,8 +56,9 @@ public class AutoBIN extends Module {
 	private HistoryManager hm = new HistoryManager();
 	private ItemParser ip = new ItemParser();
 	private PricePredictor pp = new PricePredictor();
-	private ArrayList<AuctionLog> currentAuctionPage = new ArrayList();
+	private ArrayList<AuctionLog> currentAuctionPage = new ArrayList<>();
 	private AuctionDataCache auctionData = new AuctionDataCache();
+	private List<String> alreadyBought = new LinkedList();
 	public static int displayListStart = 0;
 	private long lastApiChange;
 	
@@ -64,20 +69,20 @@ public class AutoBIN extends Module {
     private boolean updateData;
     private boolean isExecuting;
     
-    public static double minPercentageProfit = 15;
-    public static double minProfit = 500000;
+    private static Map<String, AuctionPreferences> prefs = new HashMap<>();
 	
 	public AutoBIN() {
 		super("AutoBIN", Keyboard.KEY_G);
 		instance = this;
 		GuiIngameHook.bin = this;
+		prefs.put("PET", new AuctionPreferences(1_000_000, 20));
 	}
 	
 	public void onEnable() {
 		this.setToggled(true);
 		updateData = true;
 		isExecuting = false;
-		getCurrentPage();
+		alreadyBought.clear();
 	}
 	
 	
@@ -95,6 +100,7 @@ public class AutoBIN extends Module {
 				getCurrentPage();
 			} else {
 				updateData = true;
+				cleanBoughtList();
 				checkItems();
 			}
 		}
@@ -109,7 +115,7 @@ public class AutoBIN extends Module {
 				
 				List<AuctionFlip> buyList = new ArrayList<>();
 				for(AuctionLog entry : currentAuctionPage) {
-					try {
+					try {	
 						long sellPrice = entry.getSellPrice();
 						if(sellPrice > FlippingBot.currentPurse * 0.5) continue;
 						String type = hm.classifyItem(entry.getItem());
@@ -121,11 +127,15 @@ public class AutoBIN extends Module {
 							value = roundPrice(value);
 						} else continue;
 						long profit = value - sellPrice;
-						if(profit > minProfit && (double) profit/sellPrice > minPercentageProfit/100) {
+						AuctionPreferences p = prefs.get(type);
+						if(profit > p.getMinProfit() && (double) profit/sellPrice > p.getMinMargin()/100 && !alreadyBought.contains(entry.getId())) {
 							buyList.add(new AuctionFlip(entry.getId(), profit, value));
+							io.sendChat("Adicionado a lista de compra: " + entry.getItem().getDisplayName() + " - " + sn(sellPrice) + " | " + sn(value));
+							alreadyBought.add(entry.getId());
 						}
 					} catch(Exception e) {
 						io.sendChat("Error analysing an item: " + e.toString());
+						e.printStackTrace();
 					}
 				}
 				if(!buyList.isEmpty()) {
@@ -137,6 +147,7 @@ public class AutoBIN extends Module {
 				
 			} catch(Exception e) {
 				io.sendChat("General error when checking items: " + e.toString());
+				e.printStackTrace();
 				isExecuting = false;
 			}
 			
@@ -159,17 +170,18 @@ public class AutoBIN extends Module {
 	
 	private void buyItems(List<AuctionFlip> buyList) {
 		for(AuctionFlip f : buyList) {
-			try {
-				
+			try {			
 				mc.thePlayer.sendChatMessage("/viewauction " + f.getId());
 				Thread.sleep(800);
-				cm.clickSlot(cm.slotBuyBIN, 0, 0, true);
-				f.setItem(cm.getItemInSlot(13));
-				cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
-				Thread.sleep(1500);
-				
+				if(mc.currentScreen instanceof GuiChest) {
+					cm.clickSlot(cm.slotBuyBIN, 0, 0, true);
+					f.setItem(cm.getItemInSlot(13));
+					cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
+					Thread.sleep(1500);
+				}
 			} catch(Exception e) {
 				io.sendChat("Error when buying item: " + e.toString());
+				e.printStackTrace();
 			}
 		}
 		
@@ -183,30 +195,38 @@ public class AutoBIN extends Module {
 			Thread.sleep(1000);
 			if(cm.getItemInSlot(cm.slotManageBIN).getTooltip(mc.thePlayer, false).toString().contains("You don't have any outstading bids")) return;
 			cm.clickSlot(cm.slotManageBIN, 0, 0, true);
-			if(cm.getItemInSlot(cm.slotClaimItems).getDisplayName().contains("Claim All"))
+			if(cm.getItemInSlot(cm.slotClaimItems).getDisplayName().contains("Claim All")) {
 				cm.clickSlot(cm.slotClaimItems, 0, 0, true);
-			else {
+			} else {
 				cm.clickSlot(10, 0, 0, true);
 				cm.clickSlot(cm.slotBuyBIN , 0, 0, true);
 			}
 			
+			Thread.sleep(1000);
+			mc.thePlayer.sendChatMessage("/ah");
+			Thread.sleep(1000);
+			
 			IInventory inv = cm.getPlayerInventory();
 			for(int i  = 0; i < inv.getSizeInventory(); i++) {
 				ItemStack inSlot = cm.getItemInSlot(i);
+				io.sendChat("[DEBUG] test1");
+				System.out.println("[DEBUG] inv access");
 				if(inSlot == null) continue;
-				for(AuctionFlip f : buyList) {
+				Iterator<AuctionFlip> it = buyList.iterator();
+				while(it.hasNext()) {
+					AuctionFlip f = it.next();
 					if(cm.equalItems(inSlot, f.getItem())) {
-						Thread.sleep(1000);
-						mc.thePlayer.sendChatMessage("/ah");
-						Thread.sleep(1000);
 						cm.clickSlot(i, 0, 0, false);
 						cm.clickSlot(cm.slotBINDuration, 0, 0, true);
-						cm.clickSlot(cm.slot24Hours, 0, 0, true);
+						cm.clickSlot(cm.slot2Days, 0, 0, true);
 						cm.clickSlot(cm.slotPrice, 0, 0, true);
 						cm.writeSign(Long.toString(f.getValue()));
 						cm.clickSlot(cm.slotBINCreate, 0, 0, true);
 						cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
-						buyList.remove(f);
+						it.remove();
+						Thread.sleep(1000);
+						mc.thePlayer.sendChatMessage("/ah");
+						Thread.sleep(1000);
 						break;
 					}
 				}
@@ -214,8 +234,17 @@ public class AutoBIN extends Module {
 				
 		} catch(Exception e) {
 			io.sendChat("Error selling items: " + e.toString());
+			e.printStackTrace();
 		}
 		
+	}
+	
+	private void cleanBoughtList() {
+		Iterator<String> it = alreadyBought.iterator();
+		while(it.hasNext() && alreadyBought.size() > 10) {
+			it.next();
+			it.remove();
+		}
 	}
 	
 	private void getCurrentPage() {
@@ -239,6 +268,7 @@ public class AutoBIN extends Module {
 				isExecuting = false;
 			} catch(Exception e) {
 				io.sendError("Error getting auction latest info: " + e.toString());
+				e.printStackTrace();
 				isExecuting = false;
 				updateData = true;
 			}	
@@ -247,7 +277,12 @@ public class AutoBIN extends Module {
     
     private long roundPrice(long value) {
     	long base = (value / 100_000) * 100_000;
-        return base - 4;
+        return base - 2000;
+    }
+    
+    private String sn(double n) {
+    	DecimalFormat df = new DecimalFormat("#,###.##");
+    	return df.format(n);
     }
 	
 }

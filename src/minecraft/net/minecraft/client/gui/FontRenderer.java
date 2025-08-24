@@ -404,7 +404,6 @@ public class FontRenderer implements IResourceManagerReloadListener
     		}
     	}
     	
-        GlStateManager.enableAlpha();
         this.resetStyles();
         int i;
         
@@ -652,10 +651,6 @@ public class FontRenderer implements IResourceManagerReloadListener
             {
                 color = (color & 16579836) >> 2 | color & -16777216;
             }
-            
-            GlStateManager.enableBlend();
-            GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-            GlStateManager.disableAlpha();
 
             this.alpha = (float)(color >> 24 & 255) / 255.0F;
             this.red = (float)(color >> 16 & 255) / 255.0F;
