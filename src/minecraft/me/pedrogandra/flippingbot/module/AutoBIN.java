@@ -28,6 +28,7 @@ import me.pedrogandra.flippingbot.auction.AuctionLog;
 import me.pedrogandra.flippingbot.auction.AuctionPreferences;
 import me.pedrogandra.flippingbot.auction.data.ActiveAuctionCache;
 import me.pedrogandra.flippingbot.auction.data.HistoryManager;
+import me.pedrogandra.flippingbot.auction.data.LogCache;
 import me.pedrogandra.flippingbot.auction.data.PricePredictor;
 import me.pedrogandra.flippingbot.auction.data.categories.PetData;
 import me.pedrogandra.flippingbot.auction.data.utils.ItemParser;
@@ -261,6 +262,7 @@ public class AutoBIN extends Module {
 				long now = System.currentTimeMillis();
 				long diff = now - fullAuction.lastUpdated;
 				if(diff > 20*60*1000) {
+					LogCache.updateAll();
 					fullAuction.updateCache();
 				}
 				

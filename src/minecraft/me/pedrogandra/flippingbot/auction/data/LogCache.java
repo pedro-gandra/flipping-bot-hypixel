@@ -64,4 +64,12 @@ public class LogCache {
 			csv.petToCsv(cleanedList, dataPath+"pet.csv", false);
 	}
 	
+	public static void updateAll() {
+		readPet();
+	}
+	
+	public static void cleanAll() {
+		cleanPetFile();
+	}
+	
 }

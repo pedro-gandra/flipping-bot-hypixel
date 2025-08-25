@@ -65,7 +65,7 @@ public class HistoryManager {
 						System.out.println("Items processados");
 						if(cleanCount >= 20) {
 							Thread.sleep(10000);
-							cleanFiles();
+							log.cleanAll();
 							System.out.println("Arquivos limpos");
 							cleanCount = 0;
 						} else
@@ -119,10 +119,6 @@ public class HistoryManager {
 			return "ARMOR";
 			
 		return "";
-	}
-	
-	private void cleanFiles() {
-		log.cleanPetFile();
 	}
 	
 	private void clearLists() {

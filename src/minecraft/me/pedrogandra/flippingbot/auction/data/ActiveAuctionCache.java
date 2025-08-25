@@ -34,7 +34,7 @@ public class ActiveAuctionCache {
 		boolean apiResult = true;
 		listedPets.clear();
 		try {
-			for(int i = 0; apiResult; i++) {
+			for(int i = 0; i < 20; i++) {
 				JsonObject res = api.getAuctionData(i);
 				apiResult = res.get("success").getAsBoolean();
 				if(apiResult) {
@@ -49,13 +49,14 @@ public class ActiveAuctionCache {
 							listedPets.add(ip.getAsPet(l));
 						}
 					}
-				} else if(!(res.get("cause").getAsString().equals("Page not found"))) {
-					apiResult = true;
+				} else {
+					io.sendChat("Erro lendo pagina " + i + " - " + res.get("cause").getAsString());
 					i--;
-					Thread.sleep(2000);
+					Thread.sleep(1000);
 				}
-				Thread.sleep(500);
+				Thread.sleep(100);
 			}
+			io.sendChat("Cache de 20 paginas armazenado com sucesso");
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

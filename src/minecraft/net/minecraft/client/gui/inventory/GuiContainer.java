@@ -3,6 +3,7 @@ package net.minecraft.client.gui.inventory;
 import com.google.common.collect.Sets;
 
 import me.pedrogandra.flippingbot.auction.AuctionLog;
+import me.pedrogandra.flippingbot.auction.data.ActiveAuctionCache;
 import me.pedrogandra.flippingbot.auction.data.HistoryManager;
 import me.pedrogandra.flippingbot.auction.data.LogCache;
 import me.pedrogandra.flippingbot.auction.data.PricePredictor;
@@ -396,11 +397,11 @@ public abstract class GuiContainer extends GuiScreen
                 	try {
 	                	ItemParser ip = new ItemParser();
 	                	PricePredictor pp = new PricePredictor();
-	                	ItemStack item = cm.getItemInSlot(l);
-	                	/*
-	                	PetData pet = ip.getAsPet(ip.itemToLog(item));
-	                	IOManager.sendChat("Value: " + pp.pricePet(pet));
-	                	*/
+	                	ActiveAuctionCache aac = new ActiveAuctionCache();
+	                	//ItemStack item = cm.getItemInSlot(l);
+	                	//AuctionLog log = ip.itemToLog(item);
+	                	//PetData pet = ip.getAsPet(ip.itemToLog(item));
+	                	//IOManager.sendChat("Cheapest: " + aac.cheapestEquivalent(log));
                 	} catch(Exception e) {
                 		IOManager.sendChat("Excecao clicando item: " + e.toString());
                 	}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import me.pedrogandra.flippingbot.commands.auction.CollectHistory;
+import me.pedrogandra.flippingbot.commands.auction.StoreActive;
 import me.pedrogandra.flippingbot.commands.tests.TestString;
 import me.pedrogandra.flippingbot.commands.util.SetApiKey;
 import me.pedrogandra.flippingbot.module.Module;
@@ -20,6 +21,7 @@ public class CommandManager {
 	        newCommand(new TestString());
 	        newCommand(new SetApiKey());
 	        newCommand(new CollectHistory());
+	        newCommand(new StoreActive());
 	    }
 	}
 	

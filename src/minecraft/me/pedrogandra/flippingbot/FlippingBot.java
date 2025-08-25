@@ -39,7 +39,7 @@ public class FlippingBot {
 		if (!loaded.isEmpty()) {
 	        AuthManager.setCurrentAccount(loaded.get(0));
 	    }
-		LogCache.cleanPetFile();
+		LogCache.cleanAll();
 	}
 	
 	public void checkReset() {
