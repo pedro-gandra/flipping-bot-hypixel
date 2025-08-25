@@ -9,7 +9,7 @@ import com.google.gson.JsonObject;
 import me.pedrogandra.flippingbot.api.HypixelApiClient;
 import me.pedrogandra.flippingbot.api.util.AuctionDataCache;
 import me.pedrogandra.flippingbot.auction.AuctionLog;
-import me.pedrogandra.flippingbot.auction.data.categories.PetData;
+import me.pedrogandra.flippingbot.auction.data.categories.*;
 import me.pedrogandra.flippingbot.auction.data.utils.ItemParser;
 import me.pedrogandra.flippingbot.utils.ChestManager;
 import me.pedrogandra.flippingbot.utils.IOManager;
@@ -29,6 +29,8 @@ public class ActiveAuctionCache {
 	
 	public static long lastUpdated = 0;
 	public static List<PetData> listedPets = new ArrayList<>();
+	public static List<ItemData> listedRegulars = new ArrayList<>();
+	public static List<ArmorData> listedArmor = new ArrayList<>();
 	
 	public void updateCache() {
 		boolean apiResult = true;
@@ -47,6 +49,10 @@ public class ActiveAuctionCache {
 						if(type.equals("")) continue;
 						if(type.equals("PET")) {
 							listedPets.add(ip.getAsPet(l));
+						} else if(type.equals("REGULAR")) {
+							listedRegulars.add(ip.getAsRegularItem(l));
+						} else if(type.equals("ARMOR")) {
+							listedArmor.add(ip.getAsArmor(l));
 						}
 					}
 				} else {
@@ -66,6 +72,10 @@ public class ActiveAuctionCache {
 		String type = hm.classifyItem(l.getItem());
 		if(type.equals("PET"))
 			return cheapestEquivalent(ip.getAsPet(l));
+		else if(type.equals("REGULAR"))
+			return cheapestEquivalent(ip.getAsRegularItem(l));
+		else if(type.equals("ARMOR"))
+			return cheapestEquivalent(ip.getAsArmor(l));
 		return -1;
 	}
 	
@@ -75,6 +85,32 @@ public class ActiveAuctionCache {
 			if(p.isEquivalent(pet) && p.getSoldAt() != pet.getSoldAt()) {
 				if(cheapest == null || pet.getSellPrice() < cheapest.getSellPrice()) {
 					cheapest = pet;
+				}
+			}
+		}
+		if(cheapest == null) return -1;
+		return cheapest.getSellPrice();
+	}
+	
+	private long cheapestEquivalent(ItemData i) {
+		ItemData cheapest = null;
+		for(ItemData item : listedRegulars) {
+			if(i.equals(item) && i.getSoldAt() != item.getSoldAt()) {
+				if(cheapest == null || item.getSellPrice() < cheapest.getSellPrice()) {
+					cheapest = item;
+				}
+			}
+		}
+		if(cheapest == null) return -1;
+		return cheapest.getSellPrice();
+	}
+	
+	private long cheapestEquivalent(ArmorData i) {
+		ArmorData cheapest = null;
+		for(ArmorData item : listedArmor) {
+			if(i.equals(item) && i.getSoldAt() != item.getSoldAt()) {
+				if(cheapest == null || item.getSellPrice() < cheapest.getSellPrice()) {
+					cheapest = item;
 				}
 			}
 		}

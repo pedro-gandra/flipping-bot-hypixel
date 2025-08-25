@@ -41,6 +41,8 @@ public class HistoryManager {
 	private static boolean running = false;
 	private String DATA_FOLDER = FlippingBot.DATA_FOLDER;
 	
+	public static volatile boolean updatingCache = false;
+	
 	public void updateHistory() {
 		new Thread(() -> {
 			
@@ -65,7 +67,9 @@ public class HistoryManager {
 						System.out.println("Items processados");
 						if(cleanCount >= 20) {
 							Thread.sleep(10000);
+							updatingCache = true;
 							log.cleanAll();
+							updatingCache = false;
 							System.out.println("Arquivos limpos");
 							cleanCount = 0;
 						} else

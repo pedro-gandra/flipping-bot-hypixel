@@ -129,6 +129,10 @@ public class AutoBIN extends Module {
 						if(type.equals("")) continue;
 						AuctionPreferences p = prefs.get(type);
 						long value = 0;
+						if(HistoryManager.updatingCache) {
+							io.sendChat("Esperando 2s para evitar concorrência de Threads");
+							Thread.sleep(2000);
+						}
 						if(type.equals("PET")) {
 							PetData pet = ip.getAsPet(entry);
 							value = (long) pp.pricePet(pet);
@@ -149,6 +153,7 @@ public class AutoBIN extends Module {
 								profit = value - sellPrice;
 								if(profit < p.getMinProfit() || (double) profit/sellPrice < p.getMinMargin()/100) continue;
 							}
+							buyList.add(new AuctionFlip(entry.getId(), profit, value));
 							io.sendChat("Adicionado a lista de compra: " + entry.getItem().getDisplayName() + " - " + sn(sellPrice) + " | " + sn(value));
 							alreadyBought.add(entry.getId());
 						}
