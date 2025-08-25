@@ -30,6 +30,8 @@ import me.pedrogandra.flippingbot.auction.data.ActiveAuctionCache;
 import me.pedrogandra.flippingbot.auction.data.HistoryManager;
 import me.pedrogandra.flippingbot.auction.data.LogCache;
 import me.pedrogandra.flippingbot.auction.data.PricePredictor;
+import me.pedrogandra.flippingbot.auction.data.categories.ArmorData;
+import me.pedrogandra.flippingbot.auction.data.categories.ItemData;
 import me.pedrogandra.flippingbot.auction.data.categories.PetData;
 import me.pedrogandra.flippingbot.auction.data.utils.ItemParser;
 import me.pedrogandra.flippingbot.bazaar.OrderManager;
@@ -79,6 +81,8 @@ public class AutoBIN extends Module {
 		instance = this;
 		GuiIngameHook.bin = this;
 		prefs.put("PET", new AuctionPreferences(1_000_000, 15));
+		prefs.put("REGULAR", new AuctionPreferences(500_000, 10));
+		prefs.put("ARMOR", new AuctionPreferences(1_000_000, 15));
 	}
 	
 	public void onEnable() {
@@ -128,6 +132,12 @@ public class AutoBIN extends Module {
 						if(type.equals("PET")) {
 							PetData pet = ip.getAsPet(entry);
 							value = (long) pp.pricePet(pet);
+						} else if(type.equals("REGULAR")) {
+							ItemData item = ip.getAsRegularItem(entry);
+							value = (long) pp.priceRegular(item);
+						} else if(type.equals("ARMOR")) {
+							ArmorData armor = ip.getAsArmor(entry);
+							value = (long) pp.priceArmor(armor);
 						} else continue;
 						value = roundPrice(value);
 						long profit = value - sellPrice;
@@ -217,7 +227,7 @@ public class AutoBIN extends Module {
 			
 			IInventory inv = cm.getPlayerInventory();
 			for(int i  = 0; i < inv.getSizeInventory(); i++) {
-				ItemStack inSlot = cm.getItemInSlot(i);
+				ItemStack inSlot = inv.getStackInSlot(i);
 				io.sendChat("[DEBUG] test1");
 				System.out.println("[DEBUG] inv access");
 				if(inSlot == null) continue;
