@@ -3,12 +3,12 @@ package net.minecraft.client.gui.inventory;
 import com.google.common.collect.Sets;
 
 import me.pedrogandra.flippingbot.auction.AuctionLog;
-import me.pedrogandra.flippingbot.auction.ml.HistoryManager;
-import me.pedrogandra.flippingbot.auction.ml.LogCache;
-import me.pedrogandra.flippingbot.auction.ml.PricePredictor;
-import me.pedrogandra.flippingbot.auction.ml.categories.ArmorData;
-import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
-import me.pedrogandra.flippingbot.auction.ml.utils.ItemParser;
+import me.pedrogandra.flippingbot.auction.data.HistoryManager;
+import me.pedrogandra.flippingbot.auction.data.LogCache;
+import me.pedrogandra.flippingbot.auction.data.PricePredictor;
+import me.pedrogandra.flippingbot.auction.data.categories.ArmorData;
+import me.pedrogandra.flippingbot.auction.data.categories.PetData;
+import me.pedrogandra.flippingbot.auction.data.utils.ItemParser;
 import me.pedrogandra.flippingbot.utils.ChestManager;
 import me.pedrogandra.flippingbot.utils.IOManager;
 import me.pedrogandra.flippingbot.utils.MCUtils;

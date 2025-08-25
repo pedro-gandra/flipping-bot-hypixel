@@ -1,4 +1,4 @@
-package me.pedrogandra.flippingbot.auction.ml.utils;
+package me.pedrogandra.flippingbot.auction.data.utils;
 
 import java.io.*;
 import java.util.List;
@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import me.pedrogandra.flippingbot.auction.ml.categories.ArmorData;
-import me.pedrogandra.flippingbot.auction.ml.categories.ItemData;
-import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
+import me.pedrogandra.flippingbot.auction.data.categories.ArmorData;
+import me.pedrogandra.flippingbot.auction.data.categories.ItemData;
+import me.pedrogandra.flippingbot.auction.data.categories.PetData;
 
 public class CsvExporter {
 

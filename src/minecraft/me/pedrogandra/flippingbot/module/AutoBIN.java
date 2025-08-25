@@ -26,10 +26,11 @@ import me.pedrogandra.flippingbot.auction.AuctionFlip;
 import me.pedrogandra.flippingbot.auction.AuctionInfo;
 import me.pedrogandra.flippingbot.auction.AuctionLog;
 import me.pedrogandra.flippingbot.auction.AuctionPreferences;
-import me.pedrogandra.flippingbot.auction.ml.HistoryManager;
-import me.pedrogandra.flippingbot.auction.ml.PricePredictor;
-import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
-import me.pedrogandra.flippingbot.auction.ml.utils.ItemParser;
+import me.pedrogandra.flippingbot.auction.data.ActiveAuctionCache;
+import me.pedrogandra.flippingbot.auction.data.HistoryManager;
+import me.pedrogandra.flippingbot.auction.data.PricePredictor;
+import me.pedrogandra.flippingbot.auction.data.categories.PetData;
+import me.pedrogandra.flippingbot.auction.data.utils.ItemParser;
 import me.pedrogandra.flippingbot.bazaar.OrderManager;
 import me.pedrogandra.flippingbot.commands.tests.TestString;
 import me.pedrogandra.flippingbot.gui.GuiIngameHook;
@@ -59,6 +60,7 @@ public class AutoBIN extends Module {
 	private ArrayList<AuctionLog> currentAuctionPage = new ArrayList<>();
 	private AuctionDataCache auctionData = new AuctionDataCache();
 	private List<String> alreadyBought = new LinkedList();
+	private ActiveAuctionCache fullAuction = new ActiveAuctionCache();
 	public static int displayListStart = 0;
 	private long lastApiChange;
 	
@@ -75,7 +77,7 @@ public class AutoBIN extends Module {
 		super("AutoBIN", Keyboard.KEY_G);
 		instance = this;
 		GuiIngameHook.bin = this;
-		prefs.put("PET", new AuctionPreferences(1_000_000, 20));
+		prefs.put("PET", new AuctionPreferences(1_000_000, 15));
 	}
 	
 	public void onEnable() {
@@ -120,16 +122,22 @@ public class AutoBIN extends Module {
 						if(sellPrice > FlippingBot.currentPurse * 0.5) continue;
 						String type = hm.classifyItem(entry.getItem());
 						if(type.equals("")) continue;
+						AuctionPreferences p = prefs.get(type);
 						long value = 0;
 						if(type.equals("PET")) {
 							PetData pet = ip.getAsPet(entry);
 							value = (long) pp.pricePet(pet);
-							value = roundPrice(value);
 						} else continue;
+						value = roundPrice(value);
 						long profit = value - sellPrice;
-						AuctionPreferences p = prefs.get(type);
 						if(profit > p.getMinProfit() && (double) profit/sellPrice > p.getMinMargin()/100 && !alreadyBought.contains(entry.getId())) {
-							buyList.add(new AuctionFlip(entry.getId(), profit, value));
+							long cheapest = fullAuction.cheapestEquivalent(entry);
+							cheapest = roundPrice(cheapest);
+							if(cheapest != -1 && cheapest < value) {
+								value = cheapest;
+								profit = value - sellPrice;
+								if(profit < p.getMinProfit() || (double) profit/sellPrice < p.getMinMargin()/100) continue;
+							}
 							io.sendChat("Adicionado a lista de compra: " + entry.getItem().getDisplayName() + " - " + sn(sellPrice) + " | " + sn(value));
 							alreadyBought.add(entry.getId());
 						}
@@ -250,10 +258,16 @@ public class AutoBIN extends Module {
 	private void getCurrentPage() {
 		new Thread(() -> {			
 			try {
+				long now = System.currentTimeMillis();
+				long diff = now - fullAuction.lastUpdated;
+				if(diff > 20*60*1000) {
+					fullAuction.updateCache();
+				}
+				
 				long timeUpdate = this.lastApiChange;
 				while (timeUpdate == lastApiChange) {
 					currentAuctionPage.clear();
-					JsonObject res = api.getAuctionData();
+					JsonObject res = api.getAuctionData(0);
 					timeUpdate = res.get("lastUpdated").getAsLong();
 					if(res == null || timeUpdate == lastApiChange) {
 						Thread.sleep(2000);

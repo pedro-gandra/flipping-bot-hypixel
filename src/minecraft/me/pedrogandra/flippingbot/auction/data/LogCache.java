@@ -1,4 +1,4 @@
-package me.pedrogandra.flippingbot.auction.ml;
+package me.pedrogandra.flippingbot.auction.data;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import me.pedrogandra.flippingbot.FlippingBot;
-import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
-import me.pedrogandra.flippingbot.auction.ml.utils.CsvExporter;
+import me.pedrogandra.flippingbot.auction.data.categories.PetData;
+import me.pedrogandra.flippingbot.auction.data.utils.CsvExporter;
 
 public class LogCache {
 

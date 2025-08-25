@@ -3,7 +3,7 @@ package me.pedrogandra.flippingbot.commands.auction;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import me.pedrogandra.flippingbot.auction.ml.HistoryManager;
+import me.pedrogandra.flippingbot.auction.data.HistoryManager;
 import me.pedrogandra.flippingbot.commands.Command;
 import me.pedrogandra.flippingbot.module.AutoBIN;
 import me.pedrogandra.flippingbot.utils.IOManager;

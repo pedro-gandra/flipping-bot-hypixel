@@ -1,4 +1,4 @@
-package me.pedrogandra.flippingbot.auction.ml.utils;
+package me.pedrogandra.flippingbot.auction.data.utils;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import me.pedrogandra.flippingbot.auction.AuctionLog;
-import me.pedrogandra.flippingbot.auction.ml.categories.ArmorData;
-import me.pedrogandra.flippingbot.auction.ml.categories.ItemData;
-import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
+import me.pedrogandra.flippingbot.auction.data.categories.ArmorData;
+import me.pedrogandra.flippingbot.auction.data.categories.ItemData;
+import me.pedrogandra.flippingbot.auction.data.categories.PetData;
 import me.pedrogandra.flippingbot.utils.MCUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;

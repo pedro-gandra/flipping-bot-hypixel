@@ -1,4 +1,4 @@
-package me.pedrogandra.flippingbot.auction.ml.utils;
+package me.pedrogandra.flippingbot.auction.data.utils;
 
 import java.util.List;
 
@@ -64,7 +64,7 @@ public class GeneralParser {
 			return 2;
 		if(s.contains("➌"))
 			return 3;
-		if(s.contains("➍"))
+		if(s.contains("�?"))
 			return 4;
 		if(s.contains("➎"))
 			return 5;

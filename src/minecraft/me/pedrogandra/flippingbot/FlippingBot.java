@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.lwjgl.opengl.Display;
 
-import me.pedrogandra.flippingbot.auction.ml.LogCache;
+import me.pedrogandra.flippingbot.auction.data.LogCache;
 import me.pedrogandra.flippingbot.auth.*;
 import me.pedrogandra.flippingbot.commands.CommandManager;
 import me.pedrogandra.flippingbot.module.AutoBazaar;

@@ -1,9 +1,9 @@
-package me.pedrogandra.flippingbot.auction.ml;
+package me.pedrogandra.flippingbot.auction.data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
+import me.pedrogandra.flippingbot.auction.data.categories.PetData;
 
 public class PricePredictor {
 	

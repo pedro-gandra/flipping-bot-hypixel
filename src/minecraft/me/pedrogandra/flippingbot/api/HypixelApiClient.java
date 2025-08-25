@@ -26,8 +26,8 @@ public class HypixelApiClient {
         return makeRequest(endpoint, true).getAsJsonArray("items");
     }
     
-    public JsonObject getAuctionData() throws Exception {
-        String endpoint = BASE_URL + "/skyblock/auctions?page=0";
+    public JsonObject getAuctionData(int page) throws Exception {
+        String endpoint = BASE_URL + "/skyblock/auctions?page="+page;
         return makeRequest(endpoint, false).getAsJsonObject();
     }
     

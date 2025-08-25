@@ -1,4 +1,4 @@
-package me.pedrogandra.flippingbot.auction.ml;
+package me.pedrogandra.flippingbot.auction.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,11 +14,11 @@ import me.pedrogandra.flippingbot.FlippingBot;
 import me.pedrogandra.flippingbot.api.HypixelApiClient;
 import me.pedrogandra.flippingbot.api.util.AuctionDataCache;
 import me.pedrogandra.flippingbot.auction.AuctionLog;
-import me.pedrogandra.flippingbot.auction.ml.categories.ArmorData;
-import me.pedrogandra.flippingbot.auction.ml.categories.ItemData;
-import me.pedrogandra.flippingbot.auction.ml.categories.PetData;
-import me.pedrogandra.flippingbot.auction.ml.utils.CsvExporter;
-import me.pedrogandra.flippingbot.auction.ml.utils.ItemParser;
+import me.pedrogandra.flippingbot.auction.data.categories.ArmorData;
+import me.pedrogandra.flippingbot.auction.data.categories.ItemData;
+import me.pedrogandra.flippingbot.auction.data.categories.PetData;
+import me.pedrogandra.flippingbot.auction.data.utils.CsvExporter;
+import me.pedrogandra.flippingbot.auction.data.utils.ItemParser;
 import me.pedrogandra.flippingbot.utils.MCUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;

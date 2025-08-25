@@ -1,4 +1,4 @@
-package me.pedrogandra.flippingbot.auction.ml.categories;
+package me.pedrogandra.flippingbot.auction.data.categories;
 
 import java.util.Objects;
 
