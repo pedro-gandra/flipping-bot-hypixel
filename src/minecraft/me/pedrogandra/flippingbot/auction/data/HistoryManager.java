@@ -54,7 +54,7 @@ public class HistoryManager {
 					while (timeUpdate == lastHistoryUpdate) {
 						JsonObject res = api.getAuctionEnded();
 						if(res == null || res.get("lastUpdated").getAsLong() == lastHistoryUpdate) {
-							Thread.sleep(20000);
+							Thread.sleep(10000);
 							continue;
 						}
 						timeUpdate = res.get("lastUpdated").getAsLong();
@@ -72,7 +72,7 @@ public class HistoryManager {
 							cleanCount++;
 					}
 					this.lastHistoryUpdate = timeUpdate;
-					Thread.sleep(20000);
+					Thread.sleep(10000);
 				
 				} catch(Exception e) {				
 					e.printStackTrace();		
@@ -97,8 +97,8 @@ public class HistoryManager {
 			}
 		}
 		csv.petToCsv(petList, DATA_FOLDER+"pet.csv", true);
-		csv.regularItemToCsv(regularItemList, DATA_FOLDER+"regular.csv");
-		csv.armorToCsv(armorList, DATA_FOLDER+"armor.csv");
+		csv.regularItemToCsv(regularItemList, DATA_FOLDER+"regular.csv", true);
+		csv.armorToCsv(armorList, DATA_FOLDER+"armor.csv", true);
 	}
 	
 	public String classifyItem(ItemStack item) {

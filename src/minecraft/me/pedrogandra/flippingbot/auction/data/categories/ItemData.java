@@ -1,5 +1,7 @@
 package me.pedrogandra.flippingbot.auction.data.categories;
 
+import java.util.Objects;
+
 public class ItemData {
 
 	private String name;
@@ -37,6 +39,21 @@ public class ItemData {
 	}
 	public void setSellPrice(long sellPrice) {
 		this.sellPrice = sellPrice;
+	}
+	
+	
+	@Override
+	public boolean equals(Object obj) {
+	    if (!(obj instanceof ItemData)) return false;
+	    ItemData item = (ItemData) obj;
+
+	    return this.getName().equals(item.getName()) &&
+	           this.getRarity() == item.getRarity();
+	}
+	
+	@Override
+	public int hashCode() {
+	    return Objects.hash(getName(), getRarity());
 	}
 	
 }

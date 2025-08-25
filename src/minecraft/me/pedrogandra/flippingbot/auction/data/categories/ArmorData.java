@@ -2,6 +2,8 @@ package me.pedrogandra.flippingbot.auction.data.categories;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 
 import com.google.gson.JsonArray;
 
@@ -131,5 +133,40 @@ public class ArmorData extends ItemData {
 
 	public void setEnchantments(Map<String, Integer> enchantments) {
 		this.enchantments = enchantments;
+	}
+	
+	public boolean equalEnchants(ArmorData armor) {
+		Map<String, Integer> e1 = this.enchantments;
+		Map<String, Integer> e2 = armor.getEnchantments();
+		
+		for(Entry<String, Integer> entry : e1.entrySet()) {
+			String key = entry.getKey();
+			if(!entry.getValue().equals(e2.get(key)))
+				return false;
+		}
+		
+		return true;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+	    if (!(obj instanceof ArmorData)) return false;
+	    ArmorData armor = (ArmorData) obj;
+
+	    return this.getName().equals(armor.getName()) &&
+	           this.getRarity() == armor.getRarity() &&
+	           this.reforge.equals(armor.getReforge()) &&
+	           this.dungeonStars == armor.getDungeonStars() &&
+	           this.masterStars == armor.getMasterStars() &&
+	           this.hpb == armor.getHpb() &&
+	           this.aop == armor.isAop() &&
+    		   this.dye.equals(armor.getDye()) &&
+    		   this.skin.equals(armor.getSkin()) &&
+    		   this.equalEnchants(armor);
+}
+	
+	@Override
+	public int hashCode() {
+	    return Objects.hash(getName(), getRarity(), reforge, dungeonStars, masterStars, hpb, aop, dye, skin);
 	}
 }

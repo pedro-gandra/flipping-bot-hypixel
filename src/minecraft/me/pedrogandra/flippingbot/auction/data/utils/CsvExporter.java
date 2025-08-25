@@ -45,16 +45,16 @@ public class CsvExporter {
 	    }
 	}
     
-    public static void regularItemToCsv(List<ItemData> items, String filePath) {
+    public static void regularItemToCsv(List<ItemData> items, String filePath, boolean append) {
         boolean fileExists = new File(filePath).exists();
 
-        try (FileWriter writer = new FileWriter(filePath, true);
-             BufferedWriter bw = new BufferedWriter(writer)) {
-
-            if (!fileExists) {
-                bw.write("name,rarity,soldAt,sellPrice");
-                bw.newLine();
-            }
+        try (FileWriter writer = new FileWriter(filePath, append);
+   	         BufferedWriter bw = new BufferedWriter(writer)) {
+   	    	
+   	        if (!fileExists || !append) {
+   	            bw.write("name,rarity,soldAt,sellPrice");
+   	            bw.newLine();
+   	        }
 
             for (ItemData item : items) {
                 String line = String.format("%s,%d,%d,%d",
@@ -71,17 +71,17 @@ public class CsvExporter {
         }
     }
     
-    public static void armorToCsv(List<ArmorData> armorList, String filePath) {
+    public static void armorToCsv(List<ArmorData> armorList, String filePath, boolean append) {
         boolean fileExists = new File(filePath).exists();
 
         Set<String> allEnchantments = armorList.stream()
                 .flatMap(a -> a.getEnchantments().keySet().stream())
                 .collect(Collectors.toCollection(TreeSet::new));
 
-        try (FileWriter writer = new FileWriter(filePath, true);
+        try (FileWriter writer = new FileWriter(filePath, append);
              BufferedWriter bw = new BufferedWriter(writer)) {
 
-            if (!fileExists) {
+            if (!fileExists || !append) {
                 bw.write("name,rarity,soldAt,sellPrice,reforge,dungeonStars,masterStars,hpb,aop,averageGem,dye,skin");
                 for (String enchantment : allEnchantments) {
                     bw.write("," + enchantment);
