@@ -95,17 +95,17 @@ public class ItemParser {
 			String finalTT = tt.get(gp.lastLineTT(tt));
 			boolean reforged = false;
 			for(String t : tt) {
-				if(t.contains("§9("))
+				if(t.contains("ï¿½9("))
 					reforged = true;
-				if(t.contains("Defense:") && t.contains(("§e(")))
-					hpb = gp.hpbAmount(t.substring(t.indexOf("§e(")+3));
-				if(t.contains("Health:") && t.contains("§c["))
+				if(t.contains("Defense:") && t.contains(("ï¿½e(")))
+					hpb = gp.hpbAmount(t.substring(t.indexOf("ï¿½e(")+3));
+				if(t.contains("Health:") && t.contains("ï¿½c["))
 					aop = true;
 				if(t.contains("[") && mcu.cleanText(t).replaceAll("[^a-zA-Z]", "").length() == 0)
 					averageGem = gp.averageGem(t);
 				if(t.contains("Dyed") && mcu.cleanText(t).replace("Dyed", "").length() > 0)
 					dye = mcu.cleanText(t).replaceAll("[^a-zA-Z ]", "").replace("Dyed", "").toLowerCase().trim();
-				if(t.contains("Skin") && t.contains("§8"))
+				if(t.contains("Skin") && t.contains("ï¿½8"))
 					skin = mcu.cleanText(t).replace("Skin", "").trim();
 			}
 			
@@ -141,7 +141,7 @@ public class ItemParser {
 					if(index != -1) {
 						String analyze = tempStr.substring(index-2);
 						analyze = analyze.substring(0, analyze.indexOf(","));
-						if(analyze.charAt(0) == '§' && (analyze.charAt(1) == 'l' || analyze.charAt(1) == '9')) {
+						if(analyze.charAt(0) == 'ï¿½' && (analyze.charAt(1) == 'l' || analyze.charAt(1) == '9')) {
 							analyze = mcu.cleanText(analyze).replace(key, "").trim();
 							int value = gp.romanToInt(analyze);
 							encMap.replace(key, value);

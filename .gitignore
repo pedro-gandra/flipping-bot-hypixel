@@ -1,5 +1,6 @@
 # Ignora tudo exceto src e seus arquivos de controle
 /*
+!.gitattributes
 !.gitignore
 !README.md
 !LICENSE*

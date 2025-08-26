@@ -64,7 +64,7 @@ public class GeneralParser {
 			return 2;
 		if(s.contains("➌"))
 			return 3;
-		if(s.contains("�?"))
+		if(s.contains("➍"))
 			return 4;
 		if(s.contains("➎"))
 			return 5;
