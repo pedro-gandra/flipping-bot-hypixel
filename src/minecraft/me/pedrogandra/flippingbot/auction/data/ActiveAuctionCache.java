@@ -36,7 +36,7 @@ public class ActiveAuctionCache {
 		boolean apiResult = true;
 		listedPets.clear();
 		try {
-			for(int i = 0; i < 20; i++) {
+			for(int i = 0; i < 30; i++) {
 				JsonObject res = api.getAuctionData(i);
 				apiResult = res.get("success").getAsBoolean();
 				if(apiResult) {
@@ -62,8 +62,9 @@ public class ActiveAuctionCache {
 				}
 				Thread.sleep(100);
 			}
-			io.sendChat("Cache de 20 paginas armazenado com sucesso");
+			io.sendChat("Cache de 30 paginas armazenado com sucesso");
 		} catch(Exception e) {
+			io.sendChat("Erro inesperado lendo cache do leilao");
 			e.printStackTrace();
 		}
 	}

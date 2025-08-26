@@ -395,13 +395,17 @@ public abstract class GuiContainer extends GuiScreen
                 if(mouseButton == 1) {
                 	//cm.printTooltip(l);
                 	try {
+                		/*
 	                	ItemParser ip = new ItemParser();
 	                	PricePredictor pp = new PricePredictor();
 	                	ActiveAuctionCache aac = new ActiveAuctionCache();
-	                	//ItemStack item = cm.getItemInSlot(l);
-	                	//AuctionLog log = ip.itemToLog(item);
-	                	//PetData pet = ip.getAsPet(ip.itemToLog(item));
-	                	//IOManager.sendChat("Cheapest: " + aac.cheapestEquivalent(log));
+	                	HistoryManager hm = new HistoryManager();
+	                	ItemStack item = cm.getItemInSlot(l);
+	                	AuctionLog log = ip.itemToLog(item);
+	                	IOManager.sendChat("Type: " + hm.classifyItem(log.getItem()));
+	                	IOManager.sendChat("Value: " + pp.priceItem(log));
+	                	IOManager.sendChat("Cheapest: " + aac.cheapestEquivalent(log));
+	                	*/
                 	} catch(Exception e) {
                 		IOManager.sendChat("Excecao clicando item: " + e.toString());
                 	}

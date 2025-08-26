@@ -68,7 +68,7 @@ public class ItemParser {
 		String name = mcu.cleanText(item.getDisplayName()).replaceAll("[^a-zA-Z ]", "");
 		name = name.toLowerCase().trim();
 		List<String> tt = item.getTooltip(mc.thePlayer, false);
-		int rarity = gp.rarity(tt.get(tt.size()-1), 0);
+		int rarity = gp.rarity(tt.get(gp.lastLineTT(tt)), 0);
 		
 		return new ItemData(name, rarity, log.getSoldAt(), log.getSellPrice());
 		
@@ -92,7 +92,7 @@ public class ItemParser {
 			String nameWReforge = mcu.cleanText(item.getDisplayName()).replaceAll("[^a-zA-Z ]", "").toLowerCase().replace("shiny", "").trim();
 			
 			List<String> tt = item.getTooltip(mc.thePlayer, false);
-			String finalTT = tt.get(tt.size()-1);
+			String finalTT = tt.get(gp.lastLineTT(tt));
 			boolean reforged = false;
 			for(String t : tt) {
 				if(t.contains("§9("))

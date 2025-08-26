@@ -119,40 +119,45 @@ public class LogCache {
 	                primeiraLinha = false;
 	                continue;
 	            }
-	            String[] partes = linha.split(",");
-
-	            String name = partes[0];
-	            int rarity = Integer.parseInt(partes[1]);
-	            long soldAt = Long.parseLong(partes[2]);
-	            long sellPrice = Long.parseLong(partes[3]);
-	            String reforge = partes[4];
-	            int dungeonStars = Integer.parseInt(partes[5]);
-	            int masterStars = Integer.parseInt(partes[6]);
-	            int hpb = Integer.parseInt(partes[7]);
-	            boolean aop = Boolean.parseBoolean(partes[8]);
-	            double averageGem = Double.parseDouble(partes[9]);
-	            String dye = partes[10];
-	            String skin = partes[11];
-
-	            ArmorData armor = new ArmorData(name, rarity, soldAt, sellPrice,
-	                                            reforge, dungeonStars, masterStars, hpb,
-	                                            aop, averageGem, dye, skin);
-
-	            Map<String, Integer> enchants = new HashMap<>();
-	            enchants.put("growth", Integer.parseInt(partes[12]));
-	            enchants.put("hardened mana", Integer.parseInt(partes[13]));
-	            enchants.put("hecatomb", Integer.parseInt(partes[14]));
-	            enchants.put("last stand", Integer.parseInt(partes[15]));
-	            enchants.put("legion", Integer.parseInt(partes[16]));
-	            enchants.put("protection", Integer.parseInt(partes[17]));
-	            enchants.put("rejuvenate", Integer.parseInt(partes[18]));
-	            enchants.put("smarty pants", Integer.parseInt(partes[19]));
-	            enchants.put("strong mana", Integer.parseInt(partes[20]));
-	            enchants.put("sugar rush", Integer.parseInt(partes[21]));
-	            enchants.put("wisdom", Integer.parseInt(partes[22]));
-
-	            armor.setEnchantments(enchants);
-	            armorList.add(armor);
+	            
+	            try {
+	            
+		            String[] partes = linha.split(",");
+	
+		            String name = partes[0];
+		            int rarity = Integer.parseInt(partes[1]);
+		            long soldAt = Long.parseLong(partes[2]);
+		            long sellPrice = Long.parseLong(partes[3]);
+		            String reforge = partes[4];
+		            int dungeonStars = Integer.parseInt(partes[5]);
+		            int masterStars = Integer.parseInt(partes[6]);
+		            int hpb = Integer.parseInt(partes[7]);
+		            boolean aop = Boolean.parseBoolean(partes[8]);
+		            double averageGem = Double.parseDouble(partes[9]);
+		            String dye = partes[10];
+		            String skin = partes[11];
+	
+		            ArmorData armor = new ArmorData(name, rarity, soldAt, sellPrice,
+		                                            reforge, dungeonStars, masterStars, hpb,
+		                                            aop, averageGem, dye, skin);
+	
+		            Map<String, Integer> enchants = new HashMap<>();
+		            enchants.put("growth", Integer.parseInt(partes[12]));
+		            enchants.put("hardened mana", Integer.parseInt(partes[13]));
+		            enchants.put("hecatomb", Integer.parseInt(partes[14]));
+		            enchants.put("last stand", Integer.parseInt(partes[15]));
+		            enchants.put("legion", Integer.parseInt(partes[16]));
+		            enchants.put("protection", Integer.parseInt(partes[17]));
+		            enchants.put("rejuvenate", Integer.parseInt(partes[18]));
+		            enchants.put("smarty pants", Integer.parseInt(partes[19]));
+		            enchants.put("strong mana", Integer.parseInt(partes[20]));
+		            enchants.put("sugar rush", Integer.parseInt(partes[21]));
+		            enchants.put("wisdom", Integer.parseInt(partes[22]));
+	
+		            armor.setEnchantments(enchants);
+		            armorList.add(armor);
+		            
+	            } catch(Exception ignore) {}
 	        }
 
 	        armorList.sort((a, b) -> Long.compare(b.getSoldAt(), a.getSoldAt()));

@@ -2,6 +2,8 @@ package me.pedrogandra.flippingbot.auction.data.categories;
 
 import java.util.Objects;
 
+import me.pedrogandra.flippingbot.utils.IOManager;
+
 public class ItemData {
 
 	private String name;

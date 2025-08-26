@@ -18,6 +18,7 @@ import me.pedrogandra.flippingbot.auction.data.categories.ArmorData;
 import me.pedrogandra.flippingbot.auction.data.categories.ItemData;
 import me.pedrogandra.flippingbot.auction.data.categories.PetData;
 import me.pedrogandra.flippingbot.auction.data.utils.CsvExporter;
+import me.pedrogandra.flippingbot.auction.data.utils.GeneralParser;
 import me.pedrogandra.flippingbot.auction.data.utils.ItemParser;
 import me.pedrogandra.flippingbot.utils.MCUtils;
 import net.minecraft.client.Minecraft;
@@ -30,6 +31,7 @@ public class HistoryManager {
 	private AuctionDataCache auctionData = new AuctionDataCache();
 	private MCUtils mcu = new MCUtils();
 	private ItemParser ip = new ItemParser();
+	private GeneralParser gp = new GeneralParser();
 	private CsvExporter csv = new CsvExporter();
 	private LogCache log = new LogCache();
 	
@@ -109,7 +111,8 @@ public class HistoryManager {
 		if(item.stackSize != 1) return "";
 		String name = mcu.cleanText(item.getDisplayName());
 		List<String> tt = item.getTooltip(mc.thePlayer, false);
-		String desc = tt.get(tt.size()-1);
+		
+		String desc = tt.get(gp.lastLineTT(tt));
 		
 		Pattern pattern = Pattern.compile("\\[Lvl \\d+\\]");
 		Matcher matcher = pattern.matcher(name);

@@ -130,19 +130,10 @@ public class AutoBIN extends Module {
 						AuctionPreferences p = prefs.get(type);
 						long value = 0;
 						if(HistoryManager.updatingCache) {
-							io.sendChat("Esperando 2s para evitar concorrência de Threads");
+							io.sendChat("Esperando 2s para evitar concorrencia de threads");
 							Thread.sleep(2000);
 						}
-						if(type.equals("PET")) {
-							PetData pet = ip.getAsPet(entry);
-							value = (long) pp.pricePet(pet);
-						} else if(type.equals("REGULAR")) {
-							ItemData item = ip.getAsRegularItem(entry);
-							value = (long) pp.priceRegular(item);
-						} else if(type.equals("ARMOR")) {
-							ArmorData armor = ip.getAsArmor(entry);
-							value = (long) pp.priceArmor(armor);
-						} else continue;
+						value = (long) pp.priceItem(entry);
 						value = roundPrice(value);
 						long profit = value - sellPrice;
 						if(profit > p.getMinProfit() && (double) profit/sellPrice > p.getMinMargin()/100 && !alreadyBought.contains(entry.getId())) {

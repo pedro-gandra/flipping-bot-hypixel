@@ -3,13 +3,18 @@ package me.pedrogandra.flippingbot.auction.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.pedrogandra.flippingbot.auction.AuctionLog;
 import me.pedrogandra.flippingbot.auction.data.categories.ArmorData;
 import me.pedrogandra.flippingbot.auction.data.categories.ItemData;
 import me.pedrogandra.flippingbot.auction.data.categories.PetData;
+import me.pedrogandra.flippingbot.auction.data.utils.ItemParser;
 
 public class PricePredictor {
 	
-	public double pricePet(PetData target) {
+	private HistoryManager hm = new HistoryManager();
+	private ItemParser ip = new ItemParser();
+	
+	private double priceItem(PetData target) {
 		List<PetData> relevantPets = new ArrayList<>();
 		long totalPrice = 0;
 		int nPets = 0;
@@ -42,7 +47,7 @@ public class PricePredictor {
 		return (double) totalPrice/(nPets-start*2);
 	}
 	
-	public double priceRegular(ItemData target) {
+	private double priceItem(ItemData target) {
 		List<ItemData> relevantItems = new ArrayList<>();
 		long totalPrice = 0;
 		int nItems = 0;
@@ -75,7 +80,7 @@ public class PricePredictor {
 		return (double) totalPrice/(nItems-start*2);
 	}
 	
-	public double priceArmor(ArmorData target) {
+	private double priceItem(ArmorData target) {
 		List<ArmorData> relevantItems = new ArrayList<>();
 		long totalPrice = 0;
 		int nItems = 0;
@@ -109,6 +114,17 @@ public class PricePredictor {
 		}
 		
 		return (double) totalPrice/(nItems-start*2);
+	}
+	
+	public double priceItem(AuctionLog l) {
+		String type = hm.classifyItem(l.getItem());
+		if(type.equals("PET"))
+			return priceItem(ip.getAsPet(l));
+		else if(type.equals("REGULAR"))
+			return priceItem(ip.getAsRegularItem(l));
+		else if(type.equals("ARMOR"))
+			return priceItem(ip.getAsArmor(l));
+		return -1;
 	}
 	
 }
