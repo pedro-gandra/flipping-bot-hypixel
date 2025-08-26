@@ -156,7 +156,7 @@ public class ChestManager {
     	ItemStack item = getItemInSlot(slot);
     	if(item==null) return;
     	for(String t : item.getTooltip(mc.thePlayer, false)) {
-    		t = t.replace("ง", "&");
+    		t = t.replace("ยง", "&");
     		IOManager.sendChat("TT: " + t);
     	}
     }

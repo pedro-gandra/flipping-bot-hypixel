@@ -44,7 +44,7 @@ public class MicrosoftAuthenticator {
         }
 
         String code = codeHolder[0];
-        System.out.println("Código OAuth recebido: " + code);
+        System.out.println("CÃ³digo OAuth recebido: " + code);
 
         JSONObject tokenObj = exchangeCodeForToken(code);
         String accessToken = tokenObj.getString("access_token");
@@ -81,7 +81,7 @@ public class MicrosoftAuthenticator {
             }
         }
 
-        out.write("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nVocê pode fechar esta janela.");
+        out.write("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nVocÃª pode fechar esta janela.");
         out.flush();
 
         client.close();

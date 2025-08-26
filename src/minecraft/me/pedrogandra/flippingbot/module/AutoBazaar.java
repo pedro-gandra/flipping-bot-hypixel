@@ -218,7 +218,7 @@ public class AutoBazaar extends Module {
 					cm.clickSlot(cm.slotProductBack, 0, 0, true);
 					
 				} catch(Exception e) {
-					io.sendError("Falha no loop de vaidação de items: " + e.toString());
+					io.sendError("Falha no loop de vaidaÃ§Ã£o de items: " + e.toString());
 				}
 			}
 			repeats++;

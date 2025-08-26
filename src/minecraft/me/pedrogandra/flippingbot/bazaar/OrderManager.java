@@ -202,7 +202,7 @@ public class OrderManager {
 					Thread.sleep(800);
 				} catch (Exception e) {
 					orders++;
-					io.sendError("Erro no loop de liquidação de vendas: " + e.toString());
+					io.sendError("Erro no loop de liquidaÃ§Ã£o de vendas: " + e.toString());
 				}
 			}
 		} while(orders > 0);

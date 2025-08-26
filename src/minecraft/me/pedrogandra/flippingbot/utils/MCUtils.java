@@ -9,7 +9,7 @@ import net.minecraft.client.gui.GuiScreen;
 public class MCUtils {
 	
 	public static String cleanText(String text) {
-	    return text.replaceAll("ง[0-9a-fk-or]", "");
+	    return text.replaceAll("ยง[0-9a-fk-or]", "");
 	}
 	
 	public static String getNumber(String text) {

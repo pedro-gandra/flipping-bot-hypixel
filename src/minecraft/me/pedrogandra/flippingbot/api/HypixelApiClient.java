@@ -58,7 +58,7 @@ public class HypixelApiClient {
 
         int responseCode = connection.getResponseCode();
         if (responseCode != 200) {
-            throw new RuntimeException("Erro ao acessar API Hypixel: Código " + responseCode);
+            throw new RuntimeException("Erro ao acessar API Hypixel: CÃ³digo " + responseCode);
         }
 
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
@@ -77,7 +77,7 @@ public class HypixelApiClient {
         JsonObject json = element.getAsJsonObject();
 
         if (!json.get("success").getAsBoolean()) {
-            throw new RuntimeException("Requisição retornou sucesso = false.");
+            throw new RuntimeException("RequisiÃ§Ã£o retornou sucesso = false.");
         }
 
         return json;

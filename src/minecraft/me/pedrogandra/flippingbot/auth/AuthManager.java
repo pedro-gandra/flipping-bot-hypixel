@@ -13,14 +13,14 @@ public class AuthManager {
 	private static final List<AuthAccount> accounts = new ArrayList<AuthAccount>();
     private static AuthAccount currentAccount = null;
 
-    // Adiciona nova conta (ex: apÛs login)
+    // Adiciona nova conta (ex: ap√≥s login)
     public static void addAccount(AuthAccount account) {
         accounts.add(account);
         sessionManager.addAccount(account);
         setCurrentAccount(account);
     }
 
-    // Define a conta ativa e troca a sess„o do Minecraft
+    // Define a conta ativa e troca a sess√£o do Minecraft
     
     public static void setCurrentAccount(AuthAccount account) {
         try {
@@ -55,16 +55,16 @@ public class AuthManager {
         accounts.remove(account);
         if (currentAccount == account) {
             currentAccount = null;
-            // Aqui vocÍ pode setar uma conta padr„o ou desconectar
+            // Aqui voc√™ pode setar uma conta padr√£o ou desconectar
         }
     }
 
-    // Verifica se a conta ativa est· com token v·lido
+    // Verifica se a conta ativa est√° com token v√°lido
     public static boolean isLoggedIn() {
         return currentAccount != null && !currentAccount.isTokenExpired();
     }
 
-    // ForÁa atualizaÁ„o da sess„o (caso renovemos token, por exemplo)
+    // For√ßa atualiza√ß√£o da sess√£o (caso renovemos token, por exemplo)
     public static void updateSession() {
         if (currentAccount != null) {
             Minecraft.getMinecraft().session = new Session(
