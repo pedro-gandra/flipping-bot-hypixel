@@ -2,8 +2,6 @@ package net.minecraft.client.gui;
 
 import com.google.common.collect.Lists;
 
-import me.pedrogandra.flippingbot.auth.GuiAuthManager;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -306,10 +304,6 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
                 GuiYesNo guiyesno = GuiSelectWorld.func_152129_a(this, worldinfo.getWorldName(), 12);
                 this.mc.displayGuiScreen(guiyesno);
             }
-        }
-        
-        if (button.id == 500) {
-            this.mc.displayGuiScreen(new GuiAuthManager(this));
         }
     }
 

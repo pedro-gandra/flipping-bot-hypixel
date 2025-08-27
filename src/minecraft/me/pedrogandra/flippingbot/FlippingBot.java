@@ -5,7 +5,6 @@ import java.util.List;
 import org.lwjgl.opengl.Display;
 
 import me.pedrogandra.flippingbot.auction.data.LogCache;
-import me.pedrogandra.flippingbot.auth.*;
 import me.pedrogandra.flippingbot.commands.CommandManager;
 import me.pedrogandra.flippingbot.module.AutoBazaar;
 import me.pedrogandra.flippingbot.module.ModuleManager;
@@ -32,13 +31,6 @@ public class FlippingBot {
 		moduleManager = new ModuleManager();
 		commandManager = new CommandManager();
 		Display.setTitle(name + " v" + version + " by " + creator);
-		List<AuthAccount> loaded = AuthStorage.loadAccounts();
-		for (AuthAccount acc : loaded) {
-		    AuthManager.addAccount(acc);
-		}
-		if (!loaded.isEmpty()) {
-	        AuthManager.setCurrentAccount(loaded.get(0));
-	    }
 		LogCache.cleanAll();
 	}
 	
