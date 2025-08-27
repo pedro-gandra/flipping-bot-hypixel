@@ -83,9 +83,9 @@ public class AutoBIN extends Module {
 		super("AutoBIN", Keyboard.KEY_G);
 		instance = this;
 		GuiIngameHook.bin = this;
-		prefs.put("PET", new AuctionPreferences(500_000, 15));
-		prefs.put("REGULAR", new AuctionPreferences(500_000, 15));
-		prefs.put("ARMOR", new AuctionPreferences(500_000, 15));
+		prefs.put("PET", new AuctionPreferences(500_000, 1.12, 0.95));
+		prefs.put("REGULAR", new AuctionPreferences(500_000, 1.12, 0.95));
+		prefs.put("ARMOR", new AuctionPreferences(500_000, 1.12, 0.95));
 	}
 	
 	public void onEnable() {
@@ -137,15 +137,15 @@ public class AutoBIN extends Module {
 							Thread.sleep(2000);
 						}
 						value = (long) pp.priceItem(entry);
-						value = roundPrice(value);
+						value = priceToSell(value, p.getmultiplier());
 						long profit = value - sellPrice;
-						if(profit > p.getMinProfit() && (double) profit/sellPrice > p.getMinMargin()/100 && !alreadyBought.contains(entry.getId())) {
+						if(profit > p.getMinProfit() && (double) value/sellPrice > p.getMinMargin() && !alreadyBought.contains(entry.getId())) {
 							long cheapest = fullAuction.cheapestEquivalent(entry);
-							cheapest = roundPrice(cheapest);
+							cheapest = priceToSell(cheapest, p.getmultiplier());
 							if(cheapest != -1 && cheapest < value) {
 								value = cheapest;
 								profit = value - sellPrice;
-								if(profit < p.getMinProfit() || (double) profit/sellPrice < p.getMinMargin()/100) continue;
+								if(profit < p.getMinProfit() || (double) value/sellPrice < p.getMinMargin()) continue;
 							}
 							buyList.add(new AuctionFlip(entry.getId(), profit, value));
 							io.sendChat("Adicionado a lista de compra: " + entry.getItem().getDisplayName() + " - " + sn(sellPrice) + " | " + sn(value));
@@ -305,8 +305,9 @@ public class AutoBIN extends Module {
 		}).start();
 	}
     
-    private long roundPrice(long value) {
+    private long priceToSell(long value, double mult) {
     	if(value == -1) return value;
+    	value = (long)(value*mult);
     	long base = (value / 100_000) * 100_000;
         return base - 2000;
     }
