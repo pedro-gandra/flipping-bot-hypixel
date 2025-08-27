@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
 import com.google.gson.Gson;
@@ -70,6 +72,7 @@ public class AutoBIN extends Module {
 	private File configDir = new File(mc.mcDataDir, "config");
 	private File file = new File(configDir, "auction_items.json");
     private static final Gson gson = new Gson();
+    private static final Logger LOGGER = LogManager.getLogger();
     
     private boolean updateData;
     private boolean isExecuting;
@@ -80,9 +83,9 @@ public class AutoBIN extends Module {
 		super("AutoBIN", Keyboard.KEY_G);
 		instance = this;
 		GuiIngameHook.bin = this;
-		prefs.put("PET", new AuctionPreferences(1_000_000, 15));
-		prefs.put("REGULAR", new AuctionPreferences(500_000, 10));
-		prefs.put("ARMOR", new AuctionPreferences(1_000_000, 15));
+		prefs.put("PET", new AuctionPreferences(500_000, 15));
+		prefs.put("REGULAR", new AuctionPreferences(500_000, 15));
+		prefs.put("ARMOR", new AuctionPreferences(500_000, 15));
 	}
 	
 	public void onEnable() {
@@ -150,6 +153,7 @@ public class AutoBIN extends Module {
 						}
 					} catch(Exception e) {
 						io.sendChat("Error analysing an item: " + e.toString());
+						LOGGER.error("Error analysing an item: ", e);
 						e.printStackTrace();
 					}
 				}
@@ -162,6 +166,7 @@ public class AutoBIN extends Module {
 				
 			} catch(Exception e) {
 				io.sendChat("General error when checking items: " + e.toString());
+				LOGGER.error("General error when checking items: ", e);
 				e.printStackTrace();
 				isExecuting = false;
 			}
@@ -184,22 +189,26 @@ public class AutoBIN extends Module {
 	}
 	
 	private void buyItems(List<AuctionFlip> buyList) {
-		for(AuctionFlip f : buyList) {
+		Iterator<AuctionFlip> it = buyList.iterator();
+		while(it.hasNext()) {
+			AuctionFlip f = it.next();
 			try {			
 				mc.thePlayer.sendChatMessage("/viewauction " + f.getId());
 				Thread.sleep(800);
 				if(mc.currentScreen instanceof GuiChest) {
-					cm.clickSlot(cm.slotBuyBIN, 0, 0, true);
-					f.setItem(cm.getItemInSlot(13));
-					cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
-					Thread.sleep(1500);
-				}
+					if(!cm.getItemInSlot(31).getDisplayName().contains("Collect")) {
+						f.setItem(cm.getItemInSlot(13));
+						cm.clickSlot(cm.slotBuyBIN, 0, 0, true);
+						cm.clickSlot(cm.slotConfirmBIN, 0, 0, true);
+						Thread.sleep(1500);
+					} else it.remove();
+				} else it.remove();
 			} catch(Exception e) {
 				io.sendChat("Error when buying item: " + e.toString());
+				LOGGER.error("Error when buying item: ", e);
 				e.printStackTrace();
 			}
 		}
-		
 		sellItems(buyList);
 	}
 	
@@ -224,8 +233,6 @@ public class AutoBIN extends Module {
 			IInventory inv = cm.getPlayerInventory();
 			for(int i  = 0; i < inv.getSizeInventory(); i++) {
 				ItemStack inSlot = inv.getStackInSlot(i);
-				io.sendChat("[DEBUG] test1");
-				System.out.println("[DEBUG] inv access");
 				if(inSlot == null) continue;
 				Iterator<AuctionFlip> it = buyList.iterator();
 				while(it.hasNext()) {
@@ -249,6 +256,7 @@ public class AutoBIN extends Module {
 				
 		} catch(Exception e) {
 			io.sendChat("Error selling items: " + e.toString());
+			LOGGER.error("Error selling items: ", e);
 			e.printStackTrace();
 		}
 		
@@ -298,6 +306,7 @@ public class AutoBIN extends Module {
 	}
     
     private long roundPrice(long value) {
+    	if(value == -1) return value;
     	long base = (value / 100_000) * 100_000;
         return base - 2000;
     }

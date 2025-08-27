@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
 import com.google.gson.JsonObject;
@@ -50,6 +52,7 @@ public class ChestManager {
 	
     private final Minecraft mc = Minecraft.getMinecraft();
     private final MCUtils mcu = new MCUtils();
+    private static final Logger LOGGER = LogManager.getLogger();
 
     public GuiChest getOpenChest() {
         if (mc.currentScreen instanceof GuiChest) {
@@ -164,15 +167,14 @@ public class ChestManager {
     public boolean equalItems(ItemStack i1, ItemStack i2) {
     	if(i1 == null || i2 == null)
     		return false;
-    	System.out.println("[DEBUG] Comparing: " + i1.getDisplayName() + " | | | " + i2.getDisplayName());
-    	if(!(i1.getDisplayName().equals(i2.getDisplayName()))) return false;
-    	IOManager.sendChat("[DEBUG] test2");
+    	LOGGER.info("[DEBUG] Comparing: " + mcu.cleanText(i1.getDisplayName()) + " | | | " + mcu.cleanText(i2.getDisplayName()));
+    	if(!(mcu.cleanText(i1.getDisplayName()).equals(mcu.cleanText(i2.getDisplayName())))) return false;
     	List<String> tt1 = i1.getTooltip(mc.thePlayer, false);
     	List<String> tt2 = i2.getTooltip(mc.thePlayer, false);
     	int count = 0;
     	for(int i = 0; i < tt1.size() && i < tt2.size(); i++) {
-    		System.out.println("[DEBUG] Comparing TT: " + tt1.get(i) + " | | | " + tt2.get(i));
-    		if(tt1.get(i).equals(tt2.get(i))) {
+    		LOGGER.info("[DEBUG] Comparing TT: " + mcu.cleanText(tt1.get(i)) + " | | | " + mcu.cleanText(tt2.get(i)));
+    		if(mcu.cleanText(tt1.get(i)).equals(mcu.cleanText(tt2.get(i)))) {
     			count++;
     		}
     		if(count == 6 && i == 5)
