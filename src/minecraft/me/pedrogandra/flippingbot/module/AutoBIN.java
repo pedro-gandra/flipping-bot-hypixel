@@ -76,6 +76,8 @@ public class AutoBIN extends Module {
     
     private boolean updateData;
     private boolean isExecuting;
+    public static volatile boolean checkingItems = false;
+    public static volatile boolean readingFiles = false;
     
     private static Map<String, AuctionPreferences> prefs = new HashMap<>();
 	
@@ -123,6 +125,7 @@ public class AutoBIN extends Module {
 			
 			try {
 				
+				checkingItems = true;
 				List<AuctionFlip> buyList = new ArrayList<>();
 				for(AuctionLog entry : currentAuctionPage) {
 					try {	
@@ -132,10 +135,6 @@ public class AutoBIN extends Module {
 						if(type.equals("")) continue;
 						AuctionPreferences p = prefs.get(type);
 						long value = 0;
-						if(HistoryManager.updatingCache) {
-							io.sendChat("Esperando 2s para evitar concorrencia de threads");
-							Thread.sleep(2000);
-						}
 						value = (long) pp.priceItem(entry);
 						value = priceToSell(value, p.getmultiplier());
 						long profit = value - sellPrice;
@@ -157,6 +156,7 @@ public class AutoBIN extends Module {
 						e.printStackTrace();
 					}
 				}
+				checkingItems = false;
 				if(!buyList.isEmpty()) {
 					buyList.sort((a, b) -> Long.compare(b.getProfit(), a.getProfit()));
 					buyItems(buyList);
@@ -168,6 +168,7 @@ public class AutoBIN extends Module {
 				io.sendChat("General error when checking items: " + e.toString());
 				LOGGER.error("General error when checking items: ", e);
 				e.printStackTrace();
+				checkingItems = false;
 				isExecuting = false;
 			}
 			
@@ -276,7 +277,9 @@ public class AutoBIN extends Module {
 				long now = System.currentTimeMillis();
 				long diff = now - fullAuction.lastUpdated;
 				if(diff > 20*60*1000) {
+					readingFiles = true;
 					LogCache.updateAll();
+					readingFiles = false;
 					fullAuction.updateCache();
 				}
 				

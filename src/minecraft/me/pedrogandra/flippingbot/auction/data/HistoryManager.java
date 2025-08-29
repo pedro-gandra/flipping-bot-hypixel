@@ -20,6 +20,7 @@ import me.pedrogandra.flippingbot.auction.data.categories.PetData;
 import me.pedrogandra.flippingbot.auction.data.utils.CsvExporter;
 import me.pedrogandra.flippingbot.auction.data.utils.GeneralParser;
 import me.pedrogandra.flippingbot.auction.data.utils.ItemParser;
+import me.pedrogandra.flippingbot.module.AutoBIN;
 import me.pedrogandra.flippingbot.utils.MCUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
@@ -43,8 +44,6 @@ public class HistoryManager {
 	private static boolean running = false;
 	private String DATA_FOLDER = FlippingBot.DATA_FOLDER;
 	
-	public static volatile boolean updatingCache = false;
-	
 	public void updateHistory() {
 		new Thread(() -> {
 			
@@ -65,13 +64,13 @@ public class HistoryManager {
 						JsonArray json = res.getAsJsonArray("auctions");
 						auctionData.updateLog(json);
 						currentLogPage = auctionData.getLogList();
+						if(AutoBIN.readingFiles) Thread.sleep(2000);
 						processItems();
 						System.out.println("Items processados");
 						if(cleanCount >= 20) {
 							Thread.sleep(10000);
-							updatingCache = true;
+							if(AutoBIN.checkingItems || AutoBIN.readingFiles) Thread.sleep(2000);
 							log.cleanAll();
-							updatingCache = false;
 							System.out.println("Arquivos limpos");
 							cleanCount = 0;
 						} else
